@@ -42,7 +42,7 @@ export function HomeScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [hasScreenshot, setHasScreenshot] = useState(false);
-  const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
+  const [screenshotBase64, setScreenshotBase64] = useState<string | null>(null);
 
   const tokens = useTokenStore((s) => s.tokens);
   const isProUser = useTokenStore((s) => s.isProUser);
@@ -51,7 +51,7 @@ export function HomeScreen() {
 
   const handleGenerate = async () => {
     // Need either text or screenshot
-    if (!message.trim() && !screenshotUri) {
+    if (!message.trim() && !screenshotBase64) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       return;
     }
@@ -76,13 +76,13 @@ export function HomeScreen() {
     try {
       console.log('Generating replies with:', {
         hasText: !!message.trim(),
-        hasImage: !!screenshotUri,
+        hasImage: !!screenshotBase64,
         style: selectedStyle
       });
 
       const result = await generateAIReplies({
         conversationText: message.trim() || undefined,
-        imageUri: screenshotUri || undefined,
+        imageBase64: screenshotBase64 || undefined,
         style: selectedStyle,
         count: 3,
       });
@@ -95,8 +95,8 @@ export function HomeScreen() {
       if (result.replies.length > 0) {
         setGeneratedReplies(result.replies);
         // Clear screenshot after successful generation
-        if (screenshotUri) {
-          setScreenshotUri(null);
+        if (screenshotBase64) {
+          setScreenshotBase64(null);
           setHasScreenshot(false);
         }
       } else if (result.error) {
@@ -107,7 +107,7 @@ export function HomeScreen() {
           setGeneratedReplies(localReplies);
         }
         // If only screenshot and it failed, show error via haptic
-        if (screenshotUri && !message.trim()) {
+        if (screenshotBase64 && !message.trim()) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         }
       }
@@ -118,7 +118,7 @@ export function HomeScreen() {
         setGeneratedReplies(localReplies);
       }
       // If only screenshot and it failed, show error via haptic
-      if (screenshotUri && !message.trim()) {
+      if (screenshotBase64 && !message.trim()) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     }
@@ -149,10 +149,15 @@ export function HomeScreen() {
 
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
-        // Store the image URI for vision API processing
-        setScreenshotUri(asset.uri);
-        setHasScreenshot(true);
-        console.log('Screenshot uploaded:', asset.uri);
+        // Store the base64 directly from the picker
+        if (asset.base64) {
+          setScreenshotBase64(asset.base64);
+          setHasScreenshot(true);
+          console.log('Screenshot uploaded with base64, length:', asset.base64.length);
+        } else {
+          console.error('No base64 data returned from image picker');
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
       }
     } catch (error) {
       console.error('Image picker error:', error);
@@ -232,7 +237,7 @@ export function HomeScreen() {
                   <Pressable
                     onPress={() => {
                       setHasScreenshot(false);
-                      setScreenshotUri(null);
+                      setScreenshotBase64(null);
                     }}
                     className="p-1 active:opacity-70"
                   >

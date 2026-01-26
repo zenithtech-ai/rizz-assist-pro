@@ -1,5 +1,4 @@
 // OpenAI API Service for Rizz Assist Pro
-import * as FileSystem from 'expo-file-system';
 import { CORE_PRINCIPLES, STYLE_GUIDANCE } from './knowledgeBase';
 
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_VIBECODE_OPENAI_API_KEY;
@@ -7,7 +6,7 @@ const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 
 export interface GenerateRepliesParams {
   conversationText?: string;
-  imageUri?: string;
+  imageBase64?: string;
   style: string;
   count?: number;
 }
@@ -77,49 +76,9 @@ EXTRACTED_TEXT: [The text from the conversation, especially the last message I n
 Just the reply text after the ---, no numbering or labels. Each reply should be unique and match the ${style} style.`;
 }
 
-async function imageToBase64(uri: string): Promise<string> {
-  try {
-    console.log('Reading image from URI:', uri);
-
-    // Check if file exists and get info
-    const fileInfo = await FileSystem.getInfoAsync(uri);
-    console.log('File info:', fileInfo);
-
-    if (!fileInfo.exists) {
-      // For some URIs (like ph:// on iOS), we need to copy to a local cache first
-      const filename = uri.split('/').pop() || 'image.jpg';
-      const localUri = FileSystem.cacheDirectory + filename;
-
-      try {
-        await FileSystem.copyAsync({
-          from: uri,
-          to: localUri,
-        });
-        console.log('Copied to local URI:', localUri);
-
-        const base64 = await FileSystem.readAsStringAsync(localUri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        return base64;
-      } catch (copyError) {
-        console.error('Error copying file:', copyError);
-        throw new Error('Failed to copy image file');
-      }
-    }
-
-    const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-    return base64;
-  } catch (error) {
-    console.error('Error reading image:', error);
-    throw new Error('Failed to read image');
-  }
-}
-
 export async function generateReplies({
   conversationText,
-  imageUri,
+  imageBase64,
   style,
   count = 3,
 }: GenerateRepliesParams): Promise<GenerateRepliesResult> {
@@ -131,7 +90,7 @@ export async function generateReplies({
   }
 
   const hasText = conversationText && conversationText.trim().length > 0;
-  const hasImage = imageUri && imageUri.length > 0;
+  const hasImage = imageBase64 && imageBase64.length > 0;
 
   if (!hasText && !hasImage) {
     return {
@@ -144,9 +103,7 @@ export async function generateReplies({
     let messages: Array<{ role: string; content: string | Array<{ type: string; text?: string; image_url?: { url: string } }> }>;
 
     if (hasImage) {
-      // Use vision API for screenshot
-      const base64Image = await imageToBase64(imageUri);
-
+      // Use vision API for screenshot - base64 is already provided
       messages = [
         { role: 'system', content: buildSystemPrompt(style) },
         {
@@ -159,7 +116,7 @@ export async function generateReplies({
             {
               type: 'image_url',
               image_url: {
-                url: `data:image/jpeg;base64,${base64Image}`,
+                url: `data:image/jpeg;base64,${imageBase64}`,
               },
             },
           ],
