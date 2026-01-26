@@ -76,6 +76,7 @@ export default function RootLayout() {
 
   const handleAcceptDisclaimer = async () => {
     await acceptDisclaimer();
+    // Update local state immediately so disclaimer won't show again
     if (!hasSeenOnboarding) {
       setAppState('onboarding');
     } else {
@@ -108,17 +109,13 @@ export default function RootLayout() {
     );
   }
 
-  // Main app with disclaimer modal if needed
+  // Main app
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <KeyboardProvider>
           <StatusBar style="light" />
           <RootLayoutNav />
-          <DisclaimerModal
-            visible={appState === 'disclaimer'}
-            onAccept={handleAcceptDisclaimer}
-          />
         </KeyboardProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>

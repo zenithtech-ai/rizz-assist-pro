@@ -97,7 +97,7 @@ export function HomeScreen() {
           {/* Header */}
           <View className="flex-row items-center justify-between px-5 py-3">
             <View>
-              <Text className="text-white text-2xl font-bold">Rizz Assist</Text>
+              <Text className="text-white text-2xl font-bold">RIZZ ASSIST PRO</Text>
               <Text className="text-white/60 text-sm">AI Dating Assistant</Text>
             </View>
             <TokenCounter />
@@ -165,7 +165,7 @@ export function HomeScreen() {
             >
               <Sparkles size={24} color="#FFFFFF" />
               <Text className="text-white font-bold text-lg ml-2">
-                {isGenerating ? 'Generating...' : 'Generate 5 Replies'}
+                {isGenerating ? 'Generating...' : 'Generate Replies'}
               </Text>
             </Pressable>
 
