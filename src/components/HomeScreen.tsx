@@ -1,5 +1,5 @@
-// Rizz Assist Pro - Home Screen
-import React, { useState } from 'react';
+// Rizz Assist Pro - Home Screen (Modern Hero Layout)
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,34 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { Sparkles, Image as ImageIcon, X, User, ChevronRight } from 'lucide-react-native';
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  withSequence,
+  Easing,
+} from 'react-native-reanimated';
+import {
+  Sparkles,
+  Image as ImageIcon,
+  X,
+  ChevronRight,
+  MessageCircle,
+  Shield,
+  Zap,
+  Check,
+} from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
 import { StyleButton } from '@/components/StyleButton';
@@ -32,10 +52,13 @@ import {
 import { generateReplies as generateLocalReplies, ResponseLength } from '@/lib/replyGenerator';
 import { generateReplies as generateAIReplies } from '@/lib/openai';
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const [showGenerator, setShowGenerator] = useState(false);
   const [message, setMessage] = useState('');
   const [selectedStyle, setSelectedStyle] = useState<ReplyStyleId>('flirty');
   const [responseLength, setResponseLength] = useState<ResponseLength>('short');
@@ -59,6 +82,24 @@ export function HomeScreen() {
   const currentPersona = selectedPersonaId === 'custom'
     ? { name: 'Custom Vibe', emoji: '✨' }
     : PERSONAS.find(p => p.id === selectedPersonaId) || PERSONAS[0];
+
+  // Animated button glow
+  const glowOpacity = useSharedValue(0.4);
+
+  useEffect(() => {
+    glowOpacity.value = withRepeat(
+      withSequence(
+        withTiming(0.8, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.4, { duration: 1500, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      false
+    );
+  }, []);
+
+  const animatedGlowStyle = useAnimatedStyle(() => ({
+    shadowOpacity: glowOpacity.value,
+  }));
 
   const handleGenerate = async () => {
     // Need either text or screenshot
@@ -157,13 +198,12 @@ export function HomeScreen() {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: false,
-        quality: 0.7, // Reduce quality to make base64 smaller
-        base64: true, // Request base64 directly from picker
+        quality: 0.7,
+        base64: true,
       });
 
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
-        // Store the base64 directly from the picker
         if (asset.base64) {
           setScreenshotBase64(asset.base64);
           setHasScreenshot(true);
@@ -181,6 +221,173 @@ export function HomeScreen() {
     }
   };
 
+  const handleStartGenerating = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setShowGenerator(true);
+  };
+
+  // Hero/Welcome Screen
+  if (!showGenerator) {
+    return (
+      <View style={{ flex: 1 }}>
+        <LinearGradient
+          colors={['#0D0D1A', '#1A1A2E', '#16213E']}
+          style={{ flex: 1 }}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+        >
+          <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+            {/* Header with Token Counter */}
+            <Animated.View
+              entering={FadeInDown.delay(100).duration(600)}
+              className="flex-row items-center justify-between px-5 py-3"
+            >
+              <View className="flex-row items-center">
+                <Text className="text-2xl mr-2">💬</Text>
+                <Text className="text-white/60 text-sm font-medium">RIZZ ASSIST</Text>
+              </View>
+              <TokenCounter />
+            </Animated.View>
+
+            {/* Main Content - Centered */}
+            <View className="flex-1 justify-center px-6">
+              {/* Speech Bubble Emojis */}
+              <Animated.View
+                entering={FadeInDown.delay(200).duration(600)}
+                className="flex-row justify-center mb-6"
+              >
+                <View className="flex-row items-end">
+                  <Text className="text-4xl mr-2">😏</Text>
+                  <View
+                    className="px-4 py-2 rounded-2xl rounded-bl-sm"
+                    style={{ backgroundColor: 'rgba(255, 105, 180, 0.2)' }}
+                  >
+                    <Text className="text-white text-lg">hey you...</Text>
+                  </View>
+                </View>
+                <View className="ml-3 flex-row items-end">
+                  <View
+                    className="px-4 py-2 rounded-2xl rounded-br-sm"
+                    style={{ backgroundColor: 'rgba(99, 102, 241, 0.3)' }}
+                  >
+                    <Text className="text-white text-lg">oh really? 🔥</Text>
+                  </View>
+                </View>
+              </Animated.View>
+
+              {/* Headline */}
+              <Animated.Text
+                entering={FadeInDown.delay(300).duration(600)}
+                className="text-white text-center font-bold mb-5"
+                style={{ fontSize: 36, lineHeight: 42 }}
+              >
+                Replies That Actually{'\n'}Sound Like{' '}
+                <Text style={{ color: COLORS.neonPink }}>You</Text>
+              </Animated.Text>
+
+              {/* Subtext */}
+              <Animated.View entering={FadeInDown.delay(400).duration(600)}>
+                <Text className="text-white/70 text-center text-base leading-6 mb-2">
+                  Trained on advanced dating knowledge, psychology{'\n'}+ real-world texting patterns
+                </Text>
+                <Text className="text-white/70 text-center text-base leading-6 mb-6">
+                  Finetuned to your exact persona, style & quirks
+                </Text>
+                <Text className="text-white/90 text-center text-lg font-medium">
+                  Stop sounding generic. Get replies that sound{'\n'}
+                  <Text style={{ color: COLORS.neonPink }}>100% like you</Text> - instantly.
+                </Text>
+              </Animated.View>
+
+              {/* Benefit Highlights */}
+              <Animated.View
+                entering={FadeInDown.delay(500).duration(600)}
+                className="mt-8 mb-8"
+              >
+                {[
+                  { icon: Zap, text: 'Personalized replies that match your unique vibe' },
+                  { icon: MessageCircle, text: 'No more awkward or robotic messages' },
+                  { icon: Check, text: 'Works instantly on Tinder, Hinge, Bumble & more' },
+                ].map((item, index) => (
+                  <View key={index} className="flex-row items-center mb-3">
+                    <View
+                      className="w-8 h-8 rounded-full items-center justify-center mr-3"
+                      style={{ backgroundColor: 'rgba(255, 105, 180, 0.15)' }}
+                    >
+                      <item.icon size={16} color={COLORS.neonPink} />
+                    </View>
+                    <Text className="text-white/80 text-sm flex-1">{item.text}</Text>
+                  </View>
+                ))}
+              </Animated.View>
+
+              {/* CTA Button */}
+              <Animated.View entering={FadeInUp.delay(600).duration(600)}>
+                <Animated.View
+                  style={[
+                    {
+                      shadowColor: COLORS.neonPink,
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowRadius: 20,
+                      elevation: 10,
+                    },
+                    animatedGlowStyle,
+                  ]}
+                >
+                  <Pressable
+                    onPress={handleStartGenerating}
+                    className="py-5 rounded-2xl flex-row items-center justify-center active:scale-98"
+                    style={{
+                      backgroundColor: COLORS.neonPink,
+                    }}
+                  >
+                    <Sparkles size={24} color="#FFFFFF" />
+                    <Text className="text-white font-bold text-lg ml-2">
+                      Start Getting Better Replies
+                    </Text>
+                  </Pressable>
+                </Animated.View>
+
+                {/* Edit Persona Link */}
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push('/my-vibe');
+                  }}
+                  className="mt-4 flex-row items-center justify-center active:opacity-70"
+                >
+                  <Text className="text-xl mr-2">{currentPersona.emoji}</Text>
+                  <Text className="text-white/60 text-sm">
+                    {aboutMe ? `${currentPersona.name} + About Me` : 'Set up your vibe & profile'}
+                  </Text>
+                  <ChevronRight size={16} color="rgba(255, 255, 255, 0.4)" />
+                </Pressable>
+              </Animated.View>
+            </View>
+
+            {/* Trust/Social Proof Footer */}
+            <Animated.View
+              entering={FadeIn.delay(800).duration(600)}
+              className="px-6 pb-4"
+            >
+              <View className="flex-row items-center justify-center">
+                <View className="flex-row items-center mr-6">
+                  <Sparkles size={12} color="rgba(255, 255, 255, 0.4)" />
+                  <Text className="text-white/40 text-xs ml-1">Powered by GPT-4o</Text>
+                </View>
+                <View className="flex-row items-center">
+                  <Shield size={12} color="rgba(255, 255, 255, 0.4)" />
+                  <Text className="text-white/40 text-xs ml-1">Your chats stay 100% private</Text>
+                </View>
+              </View>
+            </Animated.View>
+          </View>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  // Generator Screen (existing functionality)
   return (
     <View style={{ flex: 1 }}>
       <LinearGradient
@@ -195,25 +402,18 @@ export function HomeScreen() {
         >
           {/* Header */}
           <View className="flex-row items-center justify-between px-5 py-3">
-            <View>
-              <Text className="text-white text-2xl font-bold">RIZZ ASSIST PRO</Text>
-              <Text className="text-white/60 text-sm">AI Dating Assistant</Text>
-            </View>
-            <View className="flex-row items-center">
-              {/* My Vibe Button */}
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push('/my-vibe');
-                }}
-                className="mr-3 flex-row items-center px-3 py-2 rounded-full active:opacity-80"
-                style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
-              >
-                <Text className="text-lg mr-1">{currentPersona.emoji}</Text>
-                <User size={16} color="rgba(255, 255, 255, 0.8)" />
-              </Pressable>
-              <TokenCounter />
-            </View>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowGenerator(false);
+                setGeneratedReplies([]);
+              }}
+              className="flex-row items-center active:opacity-70"
+            >
+              <Text className="text-white/60 text-sm">← Back</Text>
+            </Pressable>
+            <Text className="text-white font-bold text-lg">Generate Replies</Text>
+            <TokenCounter />
           </View>
 
           <ScrollView
