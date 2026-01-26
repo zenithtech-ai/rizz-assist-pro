@@ -1,341 +1,292 @@
 // Rizz Assist Pro - Reply Generator
-// Generates contextual replies based on the pasted message and selected style
+// Generates 3 contextual replies based on the pasted message and selected style
 
 import { ReplyStyleId } from './constants';
 
+export type ResponseLength = 'short' | 'long';
+
 // Response templates that incorporate the input message context
-const STYLE_TEMPLATES: Record<ReplyStyleId, (input: string) => string[]> = {
-  flirty: (input) => {
+const STYLE_TEMPLATES: Record<ReplyStyleId, (input: string, length: ResponseLength) => string[]> = {
+  flirty: (input, length) => {
     const words = input.toLowerCase();
     const hasQuestion = input.includes('?');
-    const isShort = input.length < 30;
+    const longSuffix = length === 'long' ? ' What about you?' : '';
+    const shortSuffix = length === 'short' ? '' : ' Tell me more...';
 
     if (hasQuestion) {
       return [
-        `Wouldn't you like to know 😏`,
-        `Maybe... if you play your cards right`,
-        `That depends... what's in it for me?`,
-        `I'll tell you over drinks 🍸`,
-        `Keep asking questions like that and I might just fall for you`,
+        `Wouldn't you like to know 😏${longSuffix}`,
+        `Maybe... if you play your cards right${shortSuffix}`,
+        `That depends... what's in it for me?${longSuffix}`,
       ];
     }
     if (words.includes('hey') || words.includes('hi') || words.includes('hello')) {
       return [
-        `Well hello there, trouble 😏`,
-        `Finally, someone worth texting back`,
-        `I was hoping you'd say that`,
-        `You had me at hey... now keep impressing me`,
-        `Bold opener. I like your style`,
+        `Well hello there, trouble 😏${longSuffix}`,
+        `Finally, someone worth texting back${shortSuffix}`,
+        `You had me at hey... now keep impressing me${longSuffix}`,
       ];
     }
     if (words.includes('cute') || words.includes('hot') || words.includes('beautiful') || words.includes('pretty')) {
       return [
-        `You're not so bad yourself 😏`,
-        `Flattery will get you everywhere with me`,
-        `Keep talking like that...`,
-        `I know 💅 But tell me more`,
-        `Finally someone with good taste`,
+        `You're not so bad yourself 😏${longSuffix}`,
+        `Flattery will get you everywhere${shortSuffix}`,
+        `Keep talking like that...${longSuffix}`,
       ];
     }
     return [
-      `You're trouble aren't you? 😏`,
-      `Bold move... I like it`,
-      `Interesting... tell me more`,
-      `Challenge accepted 🔥`,
-      `You definitely have my attention now`,
+      `You're trouble aren't you? 😏${longSuffix}`,
+      `Bold move... I like it${shortSuffix}`,
+      `You definitely have my attention now${longSuffix}`,
     ];
   },
 
-  seductive: (input) => {
+  seductive: (input, length) => {
     const words = input.toLowerCase();
     const hasQuestion = input.includes('?');
+    const longSuffix = length === 'long' ? ' Come find out.' : '';
+    const shortSuffix = length === 'short' ? '' : ' I am waiting...';
 
     if (hasQuestion) {
       return [
-        `Come closer and I'll tell you...`,
-        `Why don't you find out for yourself?`,
-        `The answer might surprise you...`,
-        `I'd rather show you than tell you`,
-        `Some things are better whispered`,
+        `Come closer and I will tell you...${longSuffix}`,
+        `Why don't you find out for yourself?${shortSuffix}`,
+        `Some things are better whispered${longSuffix}`,
       ];
     }
     if (words.includes('hey') || words.includes('hi') || words.includes('hello')) {
       return [
-        `I've been thinking about you...`,
-        `Finally... I was getting impatient`,
-        `You kept me waiting... now make it worth my while`,
-        `Say my name like that again`,
-        `Come here...`,
+        `I have been thinking about you...${longSuffix}`,
+        `Finally... I was getting impatient${shortSuffix}`,
+        `You kept me waiting... now make it worth my while${longSuffix}`,
       ];
     }
     return [
-      `You know exactly what you're doing to me...`,
-      `Slow down... let me catch up`,
-      `Dangerous game you're playing`,
-      `Keep going... I'm listening`,
-      `Let's see where this takes us`,
+      `You know exactly what you are doing to me...${longSuffix}`,
+      `Slow down... let me catch up${shortSuffix}`,
+      `Dangerous game you are playing${longSuffix}`,
     ];
   },
 
-  funny: (input) => {
+  funny: (input, length) => {
     const words = input.toLowerCase();
     const hasQuestion = input.includes('?');
+    const longSuffix = length === 'long' ? ' Just kidding... maybe.' : '';
+    const shortSuffix = length === 'short' ? '' : ' Want to see my comedy routine?';
 
     if (hasQuestion) {
       return [
-        `Is this a pop quiz? I didn't study`,
-        `*Googles answer frantically*`,
-        `That's classified information, I'd tell you but then...`,
-        `Let me consult my Magic 8 Ball real quick`,
-        `The answer is 42. Wait, wrong question`,
+        `Is this a pop quiz? I didn't study${longSuffix}`,
+        `*Googles answer frantically*${shortSuffix}`,
+        `The answer is 42. Wait, wrong question${longSuffix}`,
       ];
     }
     if (words.includes('hey') || words.includes('hi') || words.includes('hello')) {
       return [
-        `Is this the part where I say something clever? Hold on...`,
-        `*finger guns* Ayyyy`,
-        `I've been practicing my entrance. Nailed it, right?`,
-        `Plot twist: I'm actually three raccoons in a trench coat`,
-        `My therapist says I should respond to texts. So here we are`,
-      ];
-    }
-    if (words.includes('lol') || words.includes('haha') || words.includes('funny')) {
-      return [
-        `I'll be here all week. Tip your waitress`,
-        `Comedy is my love language. That and snacks`,
-        `*takes a bow* Thank you, thank you`,
-        `I'm basically just chaos in human form`,
-        `My humor is like my coffee - questionable but addictive`,
+        `Is this the part where I say something clever?${longSuffix}`,
+        `*finger guns* Ayyyy${shortSuffix}`,
+        `I have been practicing my entrance. Nailed it, right?${longSuffix}`,
       ];
     }
     return [
-      `Is this the part where I say something clever?`,
-      `Warning: I come with dad jokes and zero filter`,
-      `Are you a magician? Because Abraca-dayum`,
-      `My pickup line game is a 404 error but my personality loads eventually`,
-      `I'd say something smooth but I tripped over my own words`,
+      `Warning: I come with dad jokes and zero filter${longSuffix}`,
+      `My humor is confusing but my vibes are immaculate${shortSuffix}`,
+      `Are you a magician? Because Abraca-dayum${longSuffix}`,
     ];
   },
 
-  roast: (input) => {
+  roast: (input, length) => {
     const words = input.toLowerCase();
     const isShort = input.length < 20;
+    const longSuffix = length === 'long' ? ' But I am into the effort.' : '';
+    const shortSuffix = length === 'short' ? '' : ' Try harder next time.';
 
     if (isShort) {
       return [
-        `Wow, really putting in the effort there`,
-        `That's it? That's your opener?`,
-        `My notifications died for THIS?`,
-        `Are you charging by the letter or something?`,
-        `Somewhere, a conversation starter is crying`,
+        `Wow, really putting in the effort there${longSuffix}`,
+        `That is it? That is your opener?${shortSuffix}`,
+        `My notifications died for THIS?${longSuffix}`,
       ];
     }
     if (words.includes('hey') || words.includes('hi') || words.includes('hello')) {
       return [
-        `Generic greeting detected. Originality not found`,
-        `Hey? That's your A-game? Yikes`,
-        `I've seen better openers on fortune cookies`,
-        `Did you copy that from a 2005 texting guide?`,
-        `Bold strategy. Let's see if it pays off (it won't)`,
+        `Generic greeting detected. Originality not found${longSuffix}`,
+        `Hey? That is your A-game?${shortSuffix}`,
+        `I have seen better openers on fortune cookies${longSuffix}`,
       ];
     }
     return [
-      `Average at best, but keep trying I guess`,
-      `0/10 would not swipe right on that energy`,
-      `Your game needs serious work`,
-      `I've heard better from my phone's autocomplete`,
-      `Is this your first day or are you always like this?`,
+      `Average at best, but keep trying${longSuffix}`,
+      `0/10 would not swipe right${shortSuffix}`,
+      `Your game needs serious work${longSuffix}`,
     ];
   },
 
-  smooth: (input) => {
+  smooth: (input, length) => {
     const words = input.toLowerCase();
     const hasQuestion = input.includes('?');
+    const longSuffix = length === 'long' ? ' I am impressed.' : '';
+    const shortSuffix = length === 'short' ? '' : ' Keep going...';
 
     if (hasQuestion) {
       return [
-        `You already know the answer...`,
-        `Exactly what you're hoping`,
-        `Better than you expected`,
-        `Let's just say you're onto something`,
-        `Read my mind, didn't you?`,
+        `You already know the answer...${longSuffix}`,
+        `Exactly what you are hoping${shortSuffix}`,
+        `Better than you expected${longSuffix}`,
       ];
     }
     if (words.includes('hey') || words.includes('hi') || words.includes('hello')) {
       return [
-        `I see you. And I like what I see`,
-        `Perfect timing. I was just thinking about you`,
-        `Now my day just got interesting`,
-        `You have my full attention`,
-        `That's the energy I've been waiting for`,
+        `I see you. And I like what I see${longSuffix}`,
+        `Perfect timing. I was just thinking about you${shortSuffix}`,
+        `Now my day just got interesting${longSuffix}`,
       ];
     }
     return [
-      `I see you... and I'm here for it`,
-      `That's my kind of vibe`,
-      `You get me`,
-      `We're definitely on the same wavelength`,
-      `You speak my language fluently`,
+      `I see you... and I am here for it${longSuffix}`,
+      `That is my kind of vibe${shortSuffix}`,
+      `We are definitely on the same wavelength${longSuffix}`,
     ];
   },
 
-  compliment: (input) => {
+  compliment: (input, length) => {
     const words = input.toLowerCase();
+    const longSuffix = length === 'long' ? ' I could get used to this.' : '';
+    const shortSuffix = length === 'short' ? '' : ' Tell me more about yourself?';
 
     if (words.includes('hey') || words.includes('hi') || words.includes('hello')) {
       return [
-        `Your energy is contagious, even through text`,
-        `Something about the way you text... I'm into it`,
-        `You've got great vibes, I can already tell`,
-        `The confidence suits you`,
-        `Already making my day better`,
+        `Your energy is contagious${longSuffix}`,
+        `Something about the way you text... I am into it${shortSuffix}`,
+        `You have got great vibes, I can already tell${longSuffix}`,
       ];
     }
     if (words.includes('?')) {
       return [
-        `I love that you're not afraid to ask`,
-        `Your curiosity is attractive`,
-        `Smart questions from a smart person`,
-        `You've got depth... I like that`,
-        `That kind of directness is refreshing`,
+        `I love that you are not afraid to ask${longSuffix}`,
+        `Your curiosity is attractive${shortSuffix}`,
+        `That kind of directness is refreshing${longSuffix}`,
       ];
     }
     return [
-      `Your smile is dangerous and I'm not complaining`,
-      `You've got this energy that's impossible to ignore`,
-      `Excellent taste, clearly`,
-      `You're absolutely captivating`,
-      `That confidence? Incredibly attractive`,
+      `Your smile is dangerous and I am not complaining${longSuffix}`,
+      `You have got this energy that is impossible to ignore${shortSuffix}`,
+      `That confidence? Incredibly attractive${longSuffix}`,
     ];
   },
 
-  askout: (input) => {
+  askout: (input, length) => {
     const words = input.toLowerCase();
+    const longSuffix = length === 'long' ? ' I know this great place.' : '';
+    const shortSuffix = length === 'short' ? '' : ' Your choice where.';
 
     if (words.includes('busy') || words.includes('free') || words.includes('plans')) {
       return [
-        `My schedule just cleared up... for the right person`,
-        `Depends. What did you have in mind?`,
-        `I could be persuaded to cancel everything`,
-        `For you? I'll make time`,
-        `Let's find out together this weekend`,
+        `My schedule just cleared up... for the right person${longSuffix}`,
+        `Depends. What did you have in mind?${shortSuffix}`,
+        `I could be persuaded to cancel everything${longSuffix}`,
       ];
     }
     return [
-      `Dinner this Friday? My treat`,
-      `Coffee tomorrow? I know a great spot`,
-      `Want to grab drinks and continue this in person?`,
-      `Let's hang out this weekend - you pick the place`,
-      `You free Thursday? I have an idea...`,
+      `Dinner this Friday? My treat${longSuffix}`,
+      `Coffee tomorrow? I know a great spot${shortSuffix}`,
+      `Want to grab drinks this weekend?${longSuffix}`,
     ];
   },
 
-  getnumber: (input) => {
+  getnumber: (input, length) => {
     const words = input.toLowerCase();
+    const longSuffix = length === 'long' ? ' I promise I text back.' : '';
+    const shortSuffix = length === 'short' ? '' : ' Let us keep talking.';
 
     if (words.includes('text') || words.includes('message') || words.includes('dm')) {
       return [
-        `Love that idea - drop your number and let's do it`,
-        `I'm way better over text. What's your number?`,
-        `Let's take this to iMessage - what's the digits?`,
-        `Real talk happens over text. Number?`,
-        `I'm sold. Give me your number`,
+        `Love that idea - what is your number?${longSuffix}`,
+        `I am way better over text${shortSuffix}`,
+        `Drop your digits, let us do this${longSuffix}`,
       ];
     }
     return [
-      `This convo is too good for here - what's your number?`,
-      `Can I text you? This deserves a proper chat`,
-      `Drop your digits, let's continue this properly`,
-      `Number exchange? I promise I'm more fun over text`,
-      `Want to continue this over text? I have memes`,
+      `This convo is too good for here - what is your number?${longSuffix}`,
+      `Can I text you?${shortSuffix}`,
+      `Want to continue this over text?${longSuffix}`,
     ];
   },
 
-  tease: (input) => {
+  tease: (input, length) => {
     const words = input.toLowerCase();
     const hasQuestion = input.includes('?');
+    const longSuffix = length === 'long' ? ' I like it though.' : '';
+    const shortSuffix = length === 'short' ? '' : ' Keep it up.';
 
     if (hasQuestion) {
       return [
-        `Ooh someone's curious... I like it`,
-        `Asking all the right questions, aren't you?`,
-        `Wouldn't YOU like to know 😏`,
-        `So many questions... so little patience`,
-        `Eager much? I appreciate that energy though`,
+        `Ooh someone is curious... I like it${longSuffix}`,
+        `Asking all the right questions${shortSuffix}`,
+        `Wouldn't YOU like to know 😏${longSuffix}`,
       ];
     }
     if (words.includes('hey') || words.includes('hi')) {
       return [
-        `Someone's feeling brave today, I see`,
-        `Oh, so NOW you want to talk to me?`,
-        `Look who finally showed up`,
-        `Took you long enough 😜`,
-        `Oh you're trouble, I can already tell`,
+        `Someone is feeling brave today${longSuffix}`,
+        `Oh, so NOW you want to talk to me?${shortSuffix}`,
+        `Look who finally showed up${longSuffix}`,
       ];
     }
     return [
-      `Someone's feeling confident today 😏`,
-      `Oh you're definitely trouble`,
-      `Think you can handle me? Let's find out`,
-      `Big talker, huh? Prove it`,
-      `Cocky much? I'm into it though`,
+      `Someone is feeling confident today 😏${longSuffix}`,
+      `Oh you are definitely trouble${shortSuffix}`,
+      `Think you can handle me?${longSuffix}`,
     ];
   },
 
-  boldmove: (input) => {
+  boldmove: (input, length) => {
     const words = input.toLowerCase();
+    const longSuffix = length === 'long' ? ' I like where this is going.' : '';
+    const shortSuffix = length === 'short' ? '' : ' What is next?';
 
     if (words.includes('?')) {
       return [
-        `Let's skip the small talk and find out together`,
-        `Only one way to know for sure...`,
-        `Why wonder when we could just... go?`,
-        `Less questions, more action. You in?`,
-        `The answer is yes. Now what?`,
+        `Let us skip the small talk${longSuffix}`,
+        `Only one way to know for sure...${shortSuffix}`,
+        `Why wonder when we could just... go?${longSuffix}`,
       ];
     }
     if (words.includes('hey') || words.includes('hi') || words.includes('hello')) {
       return [
-        `Hey yourself. Let's skip the formalities`,
-        `Enough small talk. What are you doing tonight?`,
-        `Hi. Now that that's out of the way... your place or mine?`,
-        `We both know where this is going. Let's speed it up`,
-        `Hello. Goodbye boring conversation. What's next?`,
+        `Hey yourself. Let us skip the formalities${longSuffix}`,
+        `Enough small talk. What are you doing tonight?${shortSuffix}`,
+        `Let us speed this up${longSuffix}`,
       ];
     }
     return [
-      `Let's cut the small talk - when are we meeting?`,
-      `Want to get out of here? Metaphorically speaking... for now`,
-      `I don't do games. So what's the move?`,
-      `Skip the back and forth. What do you really want?`,
-      `Let's make this interesting. I'm free tonight`,
+      `Let us cut the small talk${longSuffix}`,
+      `Skip the games${shortSuffix}`,
+      `Let us make this interesting${longSuffix}`,
     ];
   },
 };
 
 /**
- * Generates 5 contextual replies based on the input message and selected style
+ * Generates 3 contextual replies based on the input message, selected style, and response length
  */
-export function generateReplies(inputMessage: string, style: ReplyStyleId): string[] {
+export function generateReplies(inputMessage: string, style: ReplyStyleId, length: ResponseLength): string[] {
   const generator = STYLE_TEMPLATES[style];
 
   if (!generator) {
-    // Fallback - shouldn't happen but just in case
     return [
       "Interesting...",
       "Tell me more",
       "I like where this is going",
-      "You have my attention",
-      "Go on...",
     ];
   }
 
-  const replies = generator(inputMessage);
+  const replies = generator(inputMessage, length);
 
-  // Always ensure we return exactly 5 replies
-  while (replies.length < 5) {
+  // Always ensure we return exactly 3 replies
+  while (replies.length < 3) {
     replies.push("Tell me more...");
   }
 
-  return replies.slice(0, 5);
+  return replies.slice(0, 3);
 }

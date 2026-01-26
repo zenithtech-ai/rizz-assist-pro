@@ -8,13 +8,15 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Sparkles } from 'lucide-react-native';
+import { Sparkles, Image as ImageIcon } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
 import { StyleButton } from '@/components/StyleButton';
@@ -26,7 +28,7 @@ import {
   ReplyStyleId,
   FREE_TOKEN_LIMIT,
 } from '@/lib/constants';
-import { generateReplies } from '@/lib/replyGenerator';
+import { generateReplies, ResponseLength } from '@/lib/replyGenerator';
 
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -34,8 +36,10 @@ export function HomeScreen() {
 
   const [message, setMessage] = useState('');
   const [selectedStyle, setSelectedStyle] = useState<ReplyStyleId>('flirty');
+  const [responseLength, setResponseLength] = useState<ResponseLength>('short');
   const [generatedReplies, setGeneratedReplies] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
 
   const tokens = useTokenStore((s) => s.tokens);
   const isProUser = useTokenStore((s) => s.isProUser);
@@ -68,7 +72,7 @@ export function HomeScreen() {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Generate context-aware replies based on pasted message
-    const replies = generateReplies(message, selectedStyle);
+    const replies = generateReplies(message, selectedStyle, responseLength);
     setGeneratedReplies(replies);
     setIsGenerating(false);
 
@@ -79,6 +83,32 @@ export function HomeScreen() {
       setTimeout(() => {
         router.push('/paywall');
       }, 1500);
+    }
+  };
+
+  const handlePickImage = async () => {
+    setIsLoadingImage(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!result.canceled) {
+        // TODO: Send image to OCR API to extract text
+        console.log('TODO: Extract text from screenshot:', result.assets[0].uri);
+        // For now, show a placeholder
+        setMessage('(Screenshot uploaded - text extraction coming soon)');
+      }
+    } catch (error) {
+      console.error('Image picker error:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsLoadingImage(false);
     }
   };
 
@@ -109,7 +139,7 @@ export function HomeScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* Message Input */}
+            {/* Message Input with Image Button */}
             <View
               className="bg-white/10 rounded-2xl p-4 mb-6"
               style={{
@@ -117,19 +147,67 @@ export function HomeScreen() {
                 borderColor: 'rgba(255, 255, 255, 0.2)',
               }}
             >
-              <Text className="text-white/70 text-sm mb-2 font-medium">
-                Paste their message...
-              </Text>
+              <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-white/70 text-sm font-medium">
+                  Paste their message...
+                </Text>
+                <Pressable
+                  onPress={handlePickImage}
+                  disabled={isLoadingImage}
+                  className="active:opacity-80"
+                >
+                  {isLoadingImage ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <ImageIcon size={20} color="rgba(255, 255, 255, 0.7)" />
+                  )}
+                </Pressable>
+              </View>
               <TextInput
                 value={message}
                 onChangeText={setMessage}
-                placeholder="What did they say to you?"
+                placeholder="What did they say to you? Or upload a screenshot"
                 placeholderTextColor="rgba(255, 255, 255, 0.4)"
                 multiline
                 numberOfLines={4}
                 className="text-white text-base min-h-[100px]"
                 style={{ textAlignVertical: 'top' }}
               />
+            </View>
+
+            {/* Response Length Selector */}
+            <Text className="text-white font-bold text-lg mb-3">
+              Response length
+            </Text>
+            <View className="flex-row gap-2 mb-6">
+              <Pressable
+                onPress={() => setResponseLength('short')}
+                className="flex-1 py-2 px-4 rounded-lg active:opacity-80"
+                style={{
+                  backgroundColor: responseLength === 'short' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <Text
+                  className="font-semibold text-center"
+                  style={{ color: responseLength === 'short' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
+                >
+                  Short (1 sentence)
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => setResponseLength('long')}
+                className="flex-1 py-2 px-4 rounded-lg active:opacity-80"
+                style={{
+                  backgroundColor: responseLength === 'long' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.1)',
+                }}
+              >
+                <Text
+                  className="font-semibold text-center"
+                  style={{ color: responseLength === 'long' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
+                >
+                  Long (2-3 sentences)
+                </Text>
+              </Pressable>
             </View>
 
             {/* Style Selection */}
