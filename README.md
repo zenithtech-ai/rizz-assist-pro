@@ -42,9 +42,23 @@ src/
 └── lib/
     ├── constants.ts     # Colors, mock data, legal text
     ├── knowledgeBase.ts # AI knowledge base for reply generation
+    ├── openai.ts        # OpenAI GPT-4o API integration
+    ├── replyGenerator.ts # Local fallback reply generator
     ├── tokenStore.ts    # Zustand store with AsyncStorage
     └── cn.ts            # Tailwind class merger
 ```
+
+## AI Reply Generation
+
+The app uses **GPT-4o** to generate contextual, style-specific replies:
+
+- **Primary**: OpenAI GPT-4o API (`src/lib/openai.ts`)
+- **Fallback**: Local template-based generator (`src/lib/replyGenerator.ts`)
+
+The AI is guided by a comprehensive knowledge base with:
+- Core texting principles (be playful, use push-pull, etc.)
+- Style-specific techniques and example messages
+- Things to avoid for each style
 
 ## AI Knowledge Base
 

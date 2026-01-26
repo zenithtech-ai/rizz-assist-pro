@@ -28,7 +28,8 @@ import {
   ReplyStyleId,
   FREE_TOKEN_LIMIT,
 } from '@/lib/constants';
-import { generateReplies, ResponseLength } from '@/lib/replyGenerator';
+import { generateReplies as generateLocalReplies, ResponseLength } from '@/lib/replyGenerator';
+import { generateReplies as generateAIReplies } from '@/lib/openai';
 
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -68,12 +69,27 @@ export function HomeScreen() {
     setIsGenerating(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Simulate AI generation delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    // Try AI generation first, fall back to local if it fails
+    try {
+      const result = await generateAIReplies({
+        conversationText: message,
+        style: selectedStyle,
+        count: 3,
+      });
 
-    // Generate context-aware replies based on pasted message
-    const replies = generateReplies(message, selectedStyle, responseLength);
-    setGeneratedReplies(replies);
+      if (result.replies.length > 0) {
+        setGeneratedReplies(result.replies);
+      } else {
+        // Fallback to local generation
+        const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
+        setGeneratedReplies(localReplies);
+      }
+    } catch (error) {
+      console.error('AI generation failed, using fallback:', error);
+      const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
+      setGeneratedReplies(localReplies);
+    }
+
     setIsGenerating(false);
 
     // Check if this was the last free token
