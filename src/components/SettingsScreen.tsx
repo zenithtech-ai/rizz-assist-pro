@@ -141,7 +141,7 @@ export function SettingsScreen() {
                 </Text>
               </View>
               <View className="flex-1 bg-white/5 rounded-xl p-3 ml-2">
-                <Text className="text-white/50 text-xs mb-1">Screenshots</Text>
+                <Text className="text-white/50 text-xs mb-1">Screenshot Uploads</Text>
                 <View className="flex-row items-center mt-1">
                   {screenshotEnabled ? (
                     <>
