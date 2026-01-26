@@ -240,7 +240,7 @@ export function HomeScreen() {
     return (
       <View style={{ flex: 1 }}>
         <LinearGradient
-          colors={['#0D0D1A', '#1A1A2E', '#16213E']}
+          colors={['#0A0A0F', '#12121A', '#1A1A2E']}
           style={{ flex: 1 }}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
@@ -253,55 +253,36 @@ export function HomeScreen() {
             >
               <View className="flex-row items-center">
                 <Text className="text-2xl mr-2">💬</Text>
-                <Text className="text-white/60 text-sm font-medium">RIZZ ASSIST</Text>
+                <Text className="text-white/50 text-xs font-medium tracking-widest">RIZZ ASSIST</Text>
               </View>
               <TokenCounter />
             </Animated.View>
 
             {/* Main Content - Centered */}
-            <View className="flex-1 justify-center px-6">
-              {/* Speech Bubble Emojis */}
-              <Animated.View
-                entering={FadeInDown.delay(200).duration(600)}
-                className="flex-row justify-center mb-6"
-              >
-                <View className="flex-row items-end">
-                  <Text className="text-4xl mr-2">😏</Text>
-                  <View
-                    className="px-4 py-2 rounded-2xl rounded-bl-sm"
-                    style={{ backgroundColor: 'rgba(255, 105, 180, 0.2)' }}
-                  >
-                    <Text className="text-white text-lg">hey you...</Text>
-                  </View>
-                </View>
-                <View className="ml-3 flex-row items-end">
-                  <View
-                    className="px-4 py-2 rounded-2xl rounded-br-sm"
-                    style={{ backgroundColor: 'rgba(99, 102, 241, 0.3)' }}
-                  >
-                    <Text className="text-white text-lg">oh really? 🔥</Text>
-                  </View>
-                </View>
+            <View className="flex-1 justify-center px-8">
+              {/* Headline - Large & Bold */}
+              <Animated.View entering={FadeInDown.delay(200).duration(700)}>
+                <Text
+                  className="text-white text-center font-bold mb-6"
+                  style={{ fontSize: 42, lineHeight: 48, letterSpacing: -1 }}
+                >
+                  Replies That{'\n'}Actually Sound{'\n'}Like{' '}
+                  <Text style={{ color: COLORS.neonPink }}>You</Text>
+                </Text>
               </Animated.View>
 
-              {/* Headline */}
-              <Animated.Text
-                entering={FadeInDown.delay(300).duration(600)}
-                className="text-white text-center font-bold mb-4"
-                style={{ fontSize: 28, lineHeight: 34 }}
-              >
-                Replies That Actually{'\n'}Sound Like{' '}
-                <Text style={{ color: COLORS.neonPink }}>You</Text>
-              </Animated.Text>
-
-              {/* Subtext */}
-              <Animated.View entering={FadeInDown.delay(400).duration(600)} className="mb-8">
-                <Text className="text-white/70 text-center text-base leading-6 mb-2">
-                  AI-powered dating replies trained on psychology
+              {/* Subtext - Clean & Punchy */}
+              <Animated.View entering={FadeInDown.delay(350).duration(600)} className="mb-10">
+                <Text className="text-white/60 text-center text-lg leading-7 mb-3">
+                  Trained on advanced dating knowledge,{'\n'}psychology + real-world texting patterns
                 </Text>
-                <Text className="text-white/90 text-center text-lg font-medium">
-                  Get replies that sound{' '}
+                <Text className="text-white/60 text-center text-lg leading-7 mb-5">
+                  Finetuned to your exact persona, style & quirks
+                </Text>
+                <Text className="text-white/90 text-center text-xl font-semibold">
+                  Stop sounding generic.{'\n'}Get replies that sound{' '}
                   <Text style={{ color: COLORS.neonPink }}>100% like you</Text>
+                  {' '}- instantly.
                 </Text>
               </Animated.View>
 
@@ -311,23 +292,23 @@ export function HomeScreen() {
                   style={[
                     {
                       shadowColor: COLORS.neonPink,
-                      shadowOffset: { width: 0, height: 0 },
-                      shadowRadius: 20,
-                      elevation: 10,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowRadius: 24,
+                      elevation: 12,
                     },
                     animatedGlowStyle,
                   ]}
                 >
                   <Pressable
                     onPress={handleStartGenerating}
-                    className="py-5 rounded-2xl flex-row items-center justify-center active:scale-98"
+                    className="py-5 rounded-2xl flex-row items-center justify-center active:opacity-90"
                     style={{
                       backgroundColor: COLORS.neonPink,
                     }}
                   >
-                    <Sparkles size={24} color="#FFFFFF" />
+                    <Sparkles size={22} color="#FFFFFF" />
                     <Text className="text-white font-bold text-lg ml-2">
-                      Generate My Reply
+                      Generate My Reply Now
                     </Text>
                   </Pressable>
                 </Animated.View>
@@ -338,27 +319,24 @@ export function HomeScreen() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     router.push('/my-vibe');
                   }}
-                  className="mt-4 flex-row items-center justify-center active:opacity-70"
+                  className="mt-5 flex-row items-center justify-center active:opacity-70"
                 >
                   <Text className="text-xl mr-2">{currentPersona.emoji}</Text>
-                  <Text className="text-white/60 text-sm">
+                  <Text className="text-white/50 text-sm">
                     {aboutMe ? `${currentPersona.name} + About Me` : 'Set up your vibe & profile'}
                   </Text>
-                  <ChevronRight size={16} color="rgba(255, 255, 255, 0.4)" />
+                  <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" />
                 </Pressable>
               </Animated.View>
             </View>
 
             {/* Trust/Social Proof Footer */}
             <Animated.View
-              entering={FadeIn.delay(600).duration(600)}
-              className="px-6 pb-4"
+              entering={FadeIn.delay(700).duration(600)}
+              className="px-6 pb-6"
             >
               <View className="flex-row items-center justify-center">
-                <View className="flex-row items-center">
-                  <Shield size={12} color="rgba(255, 255, 255, 0.4)" />
-                  <Text className="text-white/40 text-xs ml-1">Your chats stay 100% private</Text>
-                </View>
+                <Text className="text-white/30 text-xs">🔒 Your chats stay 100% private</Text>
               </View>
             </Animated.View>
           </View>
