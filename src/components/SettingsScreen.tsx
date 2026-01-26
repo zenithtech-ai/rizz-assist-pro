@@ -30,30 +30,6 @@ import {
   DISCLAIMER_TEXT,
 } from '@/lib/constants';
 
-const getPlanDisplayName = (planType: string): string => {
-  switch (planType) {
-    case 'gold': return 'Gold Member';
-    case 'silver': return 'Silver Member';
-    default: return 'Free Plan';
-  }
-};
-
-const getMaxTokensForPlan = (planType: string): number => {
-  switch (planType) {
-    case 'gold': return GOLD_MONTHLY_TOKENS;
-    case 'silver': return SILVER_MONTHLY_TOKENS;
-    default: return FREE_DAILY_LIMIT;
-  }
-};
-
-const getPlanColor = (planType: string): string => {
-  switch (planType) {
-    case 'gold': return '#FFD700';
-    case 'silver': return '#C0C0C0';
-    default: return COLORS.tokenFree;
-  }
-};
-
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -73,23 +49,32 @@ export function SettingsScreen() {
     ? { name: 'Custom Vibe', emoji: '✨' }
     : PERSONAS.find(p => p.id === selectedPersonaId) || PERSONAS[0];
 
-  const maxTokens = getMaxTokensForPlan(planType);
-  const screenshotEnabled = planType !== 'free';
-  const planColor = getPlanColor(planType);
+  // Compute plan details
+  const isPaid = planType === 'silver' || planType === 'gold';
+  const screenshotEnabled = isPaid;
+
+  const getPlanName = () => {
+    if (planType === 'gold') return 'Gold';
+    if (planType === 'silver') return 'Silver';
+    return 'Free';
+  };
+
+  const getMaxTokens = () => {
+    if (planType === 'gold') return GOLD_MONTHLY_TOKENS;
+    if (planType === 'silver') return SILVER_MONTHLY_TOKENS;
+    return FREE_DAILY_LIMIT;
+  };
 
   const handleRestorePurchases = async () => {
     setIsRestoring(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await restorePurchase();
-
     setIsRestoring(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   const handleManageSubscription = async () => {
-    console.log('TODO: Open App Store subscription management');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await Linking.openURL('https://apps.apple.com/account/subscriptions');
   };
@@ -105,11 +90,7 @@ export function SettingsScreen() {
 
   const formatResetDate = () => {
     const date = new Date(weeklyResetDate);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
-    });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
@@ -130,117 +111,95 @@ export function SettingsScreen() {
           contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 100 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Plan Status Card */}
-          <View
-            className="bg-white/10 rounded-2xl p-5 mb-6"
-            style={{
-              borderWidth: 2,
-              borderColor: planColor,
-            }}
-          >
-            <View className="flex-row items-center mb-4">
-              <Crown size={24} color={planColor} />
-              <Text className="text-white font-bold text-xl ml-2">
-                {getPlanDisplayName(planType)}
-              </Text>
-            </View>
-
-            {/* Replies Info */}
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-white/70">Replies Remaining</Text>
-              <Text
-                className="font-bold text-lg"
-                style={{ color: planColor }}
-              >
-                {tokens}/{maxTokens}
-              </Text>
-            </View>
-
-            {/* Reset Info */}
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-white/70">
-                {planType === 'free' ? 'Daily Reset' : 'Monthly Reset'}
-              </Text>
-              <Text className="text-white/90 font-medium">
-                {planType === 'free' ? 'Every midnight' : formatResetDate()}
-              </Text>
-            </View>
-
-            {/* Screenshot Status */}
-            <View
-              className="flex-row items-center justify-between p-3 rounded-xl mt-2"
-              style={{
-                backgroundColor: screenshotEnabled
-                  ? 'rgba(68, 255, 68, 0.1)'
-                  : 'rgba(255, 68, 68, 0.1)',
-              }}
-            >
+          {/* Your Plan Card */}
+          <View className="bg-white/10 rounded-2xl p-5 mb-6">
+            {/* Plan Header */}
+            <View className="flex-row items-center justify-between mb-4">
               <View className="flex-row items-center">
-                {screenshotEnabled ? (
-                  <Camera size={18} color={COLORS.tokenPro} />
-                ) : (
-                  <CameraOff size={18} color={COLORS.tokenFree} />
-                )}
-                <Text
-                  className="ml-2 font-medium"
-                  style={{ color: screenshotEnabled ? COLORS.tokenPro : COLORS.tokenFree }}
-                >
-                  Screenshot Analysis
+                <Crown size={22} color={isPaid ? '#FFD700' : '#888'} />
+                <Text className="text-white font-bold text-lg ml-2">
+                  {getPlanName()} Plan
                 </Text>
               </View>
-              <Text
-                className="font-bold"
-                style={{ color: screenshotEnabled ? COLORS.tokenPro : COLORS.tokenFree }}
-              >
-                {screenshotEnabled ? 'Enabled' : 'Disabled'}
-              </Text>
+              {!isPaid && (
+                <View className="bg-white/20 px-3 py-1 rounded-full">
+                  <Text className="text-white/80 text-xs">Limited</Text>
+                </View>
+              )}
             </View>
 
-            {/* Upgrade Button for Free Users */}
-            {!isProUser && (
+            {/* Stats Row */}
+            <View className="flex-row mb-4">
+              <View className="flex-1 bg-white/5 rounded-xl p-3 mr-2">
+                <Text className="text-white/50 text-xs mb-1">Replies Left</Text>
+                <Text className="text-white font-bold text-xl">
+                  {tokens}
+                  <Text className="text-white/40 text-sm font-normal">/{getMaxTokens()}</Text>
+                </Text>
+                <Text className="text-white/40 text-xs mt-1">
+                  {isPaid ? `Resets ${formatResetDate()}` : 'Resets daily'}
+                </Text>
+              </View>
+              <View className="flex-1 bg-white/5 rounded-xl p-3 ml-2">
+                <Text className="text-white/50 text-xs mb-1">Screenshots</Text>
+                <View className="flex-row items-center mt-1">
+                  {screenshotEnabled ? (
+                    <>
+                      <Camera size={18} color="#4ADE80" />
+                      <Text className="text-green-400 font-bold ml-2">ON</Text>
+                    </>
+                  ) : (
+                    <>
+                      <CameraOff size={18} color="#F87171" />
+                      <Text className="text-red-400 font-bold ml-2">OFF</Text>
+                    </>
+                  )}
+                </View>
+                <Text className="text-white/40 text-xs mt-1">
+                  {screenshotEnabled ? 'Upload enabled' : 'Upgrade to unlock'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Upgrade CTA */}
+            {!isPaid && (
               <Pressable
                 onPress={handleUpgrade}
-                className="mt-4 py-4 rounded-xl items-center flex-row justify-center active:opacity-80"
+                className="py-4 rounded-xl flex-row items-center justify-center active:opacity-80"
                 style={{ backgroundColor: COLORS.neonPink }}
               >
-                <Zap size={20} color="#FFFFFF" />
-                <Text className="text-white font-bold text-base ml-2">
-                  Unlock Screenshots & More Replies
+                <Zap size={20} color="#FFF" />
+                <Text className="text-white font-bold ml-2">
+                  Upgrade for More Replies + Screenshots
                 </Text>
               </Pressable>
             )}
 
-            {/* Upgrade to Gold for Silver Users */}
             {planType === 'silver' && (
               <Pressable
                 onPress={handleUpgrade}
-                className="mt-4 py-3 rounded-xl items-center flex-row justify-center active:opacity-80"
+                className="py-3 rounded-xl flex-row items-center justify-center active:opacity-80"
                 style={{ backgroundColor: '#FFD700' }}
               >
-                <Crown size={18} color="#000000" />
+                <Crown size={18} color="#000" />
                 <Text className="text-black font-bold ml-2">
-                  Upgrade to Gold - 3,000 replies/mo
+                  Upgrade to Gold - Double your replies
                 </Text>
               </Pressable>
             )}
           </View>
 
-          {/* My Vibe & Profile Section */}
+          {/* My Vibe & Profile */}
           <View className="mb-6">
-            <Text className="text-white/60 text-sm font-medium uppercase mb-3 ml-1">
+            <Text className="text-white/50 text-xs font-medium uppercase mb-3 ml-1">
               Personalization
             </Text>
-
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push('/my-vibe');
               }}
               className="bg-white/10 rounded-2xl p-4 flex-row items-center justify-between active:opacity-80"
-              style={{
-                borderWidth: 1,
-                borderColor: 'rgba(255, 105, 180, 0.3)',
-              }}
             >
               <View className="flex-row items-center flex-1">
                 <View
@@ -251,87 +210,63 @@ export function SettingsScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-white font-bold">My Vibe & Profile</Text>
-                  <Text className="text-white/60 text-sm">
-                    Current: {currentPersona.name}
-                  </Text>
+                  <Text className="text-white/50 text-sm">{currentPersona.name}</Text>
                 </View>
               </View>
               <Sparkles size={20} color={COLORS.neonPink} />
             </Pressable>
           </View>
 
-          {/* Actions */}
+          {/* Account Actions */}
           <View className="mb-6">
-            <Text className="text-white/60 text-sm font-medium uppercase mb-3 ml-1">
+            <Text className="text-white/50 text-xs font-medium uppercase mb-3 ml-1">
               Account
             </Text>
 
-            {/* Restore Purchases */}
             <Pressable
               onPress={handleRestorePurchases}
               disabled={isRestoring}
               className="bg-white/10 rounded-2xl p-4 flex-row items-center justify-between mb-3 active:opacity-80"
             >
-              <View className="flex-row items-center flex-1">
-                <RotateCcw size={20} color="rgba(255, 255, 255, 0.8)" />
+              <View className="flex-row items-center">
+                <RotateCcw size={20} color="rgba(255, 255, 255, 0.7)" />
                 <Text className="text-white font-medium ml-3">Restore Purchases</Text>
               </View>
-              {isRestoring && <ActivityIndicator color="#FFFFFF" size="small" />}
+              {isRestoring && <ActivityIndicator color="#FFF" size="small" />}
             </Pressable>
 
-            {/* Manage Subscription */}
-            {isProUser && (
+            {isPaid && (
               <Pressable
                 onPress={handleManageSubscription}
-                className="bg-white/10 rounded-2xl p-4 flex-row items-center justify-between mb-3 active:opacity-80"
+                className="bg-white/10 rounded-2xl p-4 flex-row items-center mb-3 active:opacity-80"
               >
-                <View className="flex-row items-center flex-1">
-                  <ExternalLink size={20} color="rgba(255, 255, 255, 0.8)" />
-                  <Text className="text-white font-medium ml-3">Manage Subscription</Text>
-                </View>
+                <ExternalLink size={20} color="rgba(255, 255, 255, 0.7)" />
+                <Text className="text-white font-medium ml-3">Manage Subscription</Text>
               </Pressable>
             )}
 
-            {/* Contact Support */}
             <Pressable
               onPress={handleContactSupport}
-              className="bg-white/10 rounded-2xl p-4 flex-row items-center justify-between active:opacity-80"
+              className="bg-white/10 rounded-2xl p-4 flex-row items-center active:opacity-80"
             >
-              <View className="flex-row items-center flex-1">
-                <Mail size={20} color="rgba(255, 255, 255, 0.8)" />
-                <Text className="text-white font-medium ml-3">Contact Support</Text>
-              </View>
+              <Mail size={20} color="rgba(255, 255, 255, 0.7)" />
+              <Text className="text-white font-medium ml-3">Contact Support</Text>
             </Pressable>
           </View>
 
-          {/* Legal Section */}
+          {/* Legal */}
           <View>
-            <Text className="text-white/60 text-sm font-medium uppercase mb-3 ml-1">
+            <Text className="text-white/50 text-xs font-medium uppercase mb-3 ml-1">
               Legal
             </Text>
-
-            <CollapsibleSection
-              title="Disclaimer"
-              content={DISCLAIMER_TEXT}
-            />
-
-            <CollapsibleSection
-              title="Terms of Service"
-              content={TERMS_OF_SERVICE}
-            />
-
-            <CollapsibleSection
-              title="Privacy Policy"
-              content={PRIVACY_POLICY}
-            />
+            <CollapsibleSection title="Disclaimer" content={DISCLAIMER_TEXT} />
+            <CollapsibleSection title="Terms of Service" content={TERMS_OF_SERVICE} />
+            <CollapsibleSection title="Privacy Policy" content={PRIVACY_POLICY} />
           </View>
 
           {/* App Info */}
           <View className="mt-6 items-center">
-            <Text className="text-white/40 text-sm">Rizz Assist Pro v1.0.0</Text>
-            <Text className="text-white/30 text-xs mt-1">
-              Made with fire for better conversations
-            </Text>
+            <Text className="text-white/30 text-sm">Rizz Assist Pro v1.0.0</Text>
           </View>
         </ScrollView>
       </LinearGradient>

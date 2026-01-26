@@ -27,10 +27,6 @@ interface TokenState {
   totalUses: number;
   isLoaded: boolean;
 
-  // Computed
-  screenshotEnabled: boolean;
-  maxTokens: number;
-
   // Actions
   loadState: () => Promise<void>;
   useToken: () => boolean;
@@ -78,7 +74,7 @@ const getMaxTokensForPlan = (plan: PlanType): number => {
 
 export const useTokenStore = create<TokenState>((set, get) => ({
   isProUser: false,
-  planType: 'free',
+  planType: 'free' as PlanType,
   tokens: FREE_DAILY_LIMIT,
   weeklyResetDate: getNextSunday(),
   dailyResetDate: getTomorrowMidnight(),
@@ -86,14 +82,6 @@ export const useTokenStore = create<TokenState>((set, get) => ({
   hasAcceptedDisclaimer: false,
   totalUses: 0,
   isLoaded: false,
-
-  // Computed getters
-  get screenshotEnabled() {
-    return get().planType !== 'free';
-  },
-  get maxTokens() {
-    return getMaxTokensForPlan(get().planType);
-  },
 
   loadState: async () => {
     try {
