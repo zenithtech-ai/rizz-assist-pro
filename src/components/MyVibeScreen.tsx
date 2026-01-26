@@ -14,10 +14,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Check, ChevronLeft, Sparkles, User, Pencil } from 'lucide-react-native';
+import { Check, ChevronLeft, Sparkles, User, Pencil, Lock, Zap } from 'lucide-react-native';
 
 import { COLORS } from '@/lib/constants';
 import { usePersonaStore, PERSONAS, PersonaId } from '@/lib/personaStore';
+import { useTokenStore } from '@/lib/tokenStore';
 
 interface PersonaCardProps {
   persona: typeof PERSONAS[number];
@@ -83,6 +84,10 @@ export function MyVibeScreen() {
   const savedAboutMe = usePersonaStore((s) => s.aboutMe);
   const saveAll = usePersonaStore((s) => s.saveAll);
   const isLoaded = usePersonaStore((s) => s.isLoaded);
+
+  // Check if user has a paid plan (silver or gold)
+  const planType = useTokenStore((s) => s.planType);
+  const isPaidUser = planType === 'silver' || planType === 'gold';
 
   // Local state for editing
   const [selectedId, setSelectedId] = useState<PersonaId | 'custom'>(savedPersonaId);
@@ -232,40 +237,98 @@ export function MyVibeScreen() {
               <View className="flex-row items-center mb-2">
                 <User size={20} color={COLORS.neonPink} />
                 <Text className="text-white font-bold text-lg ml-2">About Me</Text>
+                {!isPaidUser && (
+                  <View className="ml-2 bg-white/15 px-2 py-0.5 rounded-full flex-row items-center">
+                    <Lock size={10} color="rgba(255, 255, 255, 0.7)" />
+                    <Text className="text-white/70 text-xs ml-1">PRO</Text>
+                  </View>
+                )}
               </View>
-              <Text className="text-white/60 text-sm mb-4">
-                Tell us about yourself to make replies more personalized!
-              </Text>
 
-              <View
-                className="rounded-2xl p-4"
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  borderWidth: 1,
-                  borderColor: 'rgba(255, 255, 255, 0.15)',
-                }}
-              >
-                <View className="flex-row items-center mb-3">
-                  <Pencil size={16} color="rgba(255, 255, 255, 0.6)" />
-                  <Text className="text-white/70 text-sm ml-2">
-                    Likes, Dislikes, Quirks, etc.
+              {isPaidUser ? (
+                <>
+                  <Text className="text-white/60 text-sm mb-4">
+                    Tell us about yourself to make replies more personalized!
+                  </Text>
+
+                  <View
+                    className="rounded-2xl p-4"
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.15)',
+                    }}
+                  >
+                    <View className="flex-row items-center mb-3">
+                      <Pencil size={16} color="rgba(255, 255, 255, 0.6)" />
+                      <Text className="text-white/70 text-sm ml-2">
+                        Likes, Dislikes, Quirks, etc.
+                      </Text>
+                    </View>
+                    <TextInput
+                      value={aboutMe}
+                      onChangeText={setAboutMe}
+                      placeholder="E.g., I love hiking and bad puns, hate small talk, my quirk is quoting movies randomly..."
+                      placeholderTextColor="rgba(255, 255, 255, 0.3)"
+                      multiline
+                      numberOfLines={5}
+                      className="text-white text-base min-h-[120px]"
+                      style={{ textAlignVertical: 'top' }}
+                    />
+                  </View>
+
+                  <Text className="text-white/40 text-xs mt-2 ml-1">
+                    Optional but recommended - helps AI craft replies that sound like you
+                  </Text>
+                </>
+              ) : (
+                <View
+                  className="rounded-2xl p-5"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 105, 180, 0.3)',
+                  }}
+                >
+                  <View className="flex-row items-center mb-3">
+                    <Sparkles size={22} color={COLORS.neonPink} />
+                    <Text className="text-white font-bold text-lg ml-2">
+                      Unlock Replies That Are 100% You
+                    </Text>
+                  </View>
+
+                  <Text className="text-white/70 text-sm leading-5 mb-4">
+                    Right now, your rizz suggestions use our base style.{'\n\n'}
+                    Add your likes, dislikes, quirks & personal vibe in About Me to fine-tune the AI to your exact personality - nothing but smooth, authentic texts that feel like the real you.{'\n\n'}
+                    Free users get solid replies. PRO users get replies that sound unmistakably you.
+                  </Text>
+
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      router.push('/paywall');
+                    }}
+                    className="py-4 rounded-xl flex-row items-center justify-center active:opacity-80"
+                    style={{
+                      backgroundColor: COLORS.neonPink,
+                      shadowColor: COLORS.neonPink,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.4,
+                      shadowRadius: 12,
+                      elevation: 6,
+                    }}
+                  >
+                    <Zap size={20} color="#FFF" />
+                    <Text className="text-white font-bold text-base ml-2">
+                      Upgrade to PRO – Unlock About Me
+                    </Text>
+                  </Pressable>
+
+                  <Text className="text-white/40 text-xs text-center mt-3">
+                    (Plus 50+ replies a day, priority support & more)
                   </Text>
                 </View>
-                <TextInput
-                  value={aboutMe}
-                  onChangeText={setAboutMe}
-                  placeholder="E.g., I love hiking and bad puns, hate small talk, my quirk is quoting movies randomly..."
-                  placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                  multiline
-                  numberOfLines={5}
-                  className="text-white text-base min-h-[120px]"
-                  style={{ textAlignVertical: 'top' }}
-                />
-              </View>
-
-              <Text className="text-white/40 text-xs mt-2 ml-1">
-                Optional but recommended - helps AI craft replies that sound like you
-              </Text>
+              )}
             </Animated.View>
           </ScrollView>
 

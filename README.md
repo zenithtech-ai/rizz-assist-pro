@@ -7,7 +7,7 @@ AI-powered dating assistant app that generates contextual reply suggestions base
 - **10 Reply Styles**: Flirty, Seductive, Funny, Roast, Smooth, Compliment, Ask Out, Get Number, Tease, Bold Move
 - **9 Persona Presets**: Cheeky Tease, Smooth Charmer, Witty Banter, Bold Direct, Mysterious Intrigue, Cute Wholesome, Edgy Sarcastic, Thoughtful Deep, Adventurous Fun
 - **Custom Persona**: Define your own personality/style
-- **About Me Profile**: Add personal details (likes, dislikes, quirks) for more personalized replies
+- **About Me Profile**: Add personal details (likes, dislikes, quirks) for more personalized replies (Silver & Gold only)
 - **Screenshot Analysis**: Upload conversation screenshots for AI to read and respond to
 - **Token System**: Free users get 3 replies/day, Silver gets 1,500/month, Gold gets 3,000/month
 - **Screenshot Analysis**: Upload conversation screenshots for AI to read and respond to (Silver & Gold only)
