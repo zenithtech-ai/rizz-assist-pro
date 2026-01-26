@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Sparkles, Image as ImageIcon } from 'lucide-react-native';
+import { Sparkles, Image as ImageIcon, X } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
 import { StyleButton } from '@/components/StyleButton';
@@ -41,6 +41,7 @@ export function HomeScreen() {
   const [generatedReplies, setGeneratedReplies] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+  const [hasScreenshot, setHasScreenshot] = useState(false);
 
   const tokens = useTokenStore((s) => s.tokens);
   const isProUser = useTokenStore((s) => s.isProUser);
@@ -117,8 +118,8 @@ export function HomeScreen() {
       if (!result.canceled) {
         // TODO: Send image to OCR API to extract text
         console.log('TODO: Extract text from screenshot:', result.assets[0].uri);
-        // For now, show a placeholder
-        setMessage('(Screenshot uploaded - text extraction coming soon)');
+        // Show screenshot uploaded indicator
+        setHasScreenshot(true);
       }
     } catch (error) {
       console.error('Image picker error:', error);
@@ -189,6 +190,20 @@ export function HomeScreen() {
                 className="text-white text-base min-h-[100px]"
                 style={{ textAlignVertical: 'top' }}
               />
+              {hasScreenshot && (
+                <View className="flex-row items-center justify-between mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.15)' }}>
+                  <View className="flex-row items-center">
+                    <ImageIcon size={16} color={COLORS.neonPink} />
+                    <Text className="text-white/80 text-sm ml-2">Screenshot uploaded</Text>
+                  </View>
+                  <Pressable
+                    onPress={() => setHasScreenshot(false)}
+                    className="p-1 active:opacity-70"
+                  >
+                    <X size={16} color="rgba(255, 255, 255, 0.6)" />
+                  </Pressable>
+                </View>
+              )}
             </View>
 
             {/* Response Length Selector */}
