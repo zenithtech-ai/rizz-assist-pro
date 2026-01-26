@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Sparkles, Image as ImageIcon, X, User } from 'lucide-react-native';
+import { Sparkles, Image as ImageIcon, X, User, ChevronRight } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
 import { StyleButton } from '@/components/StyleButton';
@@ -222,6 +222,39 @@ export function HomeScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            {/* My Vibe Card - Edit Persona Button */}
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/my-vibe');
+              }}
+              className="mb-4 active:opacity-90"
+            >
+              <View
+                className="rounded-2xl p-4 flex-row items-center"
+                style={{
+                  backgroundColor: 'rgba(255, 105, 180, 0.15)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 105, 180, 0.3)',
+                }}
+              >
+                <Text className="text-2xl mr-3">{currentPersona.emoji}</Text>
+                <View className="flex-1">
+                  <Text className="text-white font-bold text-base">{currentPersona.name}</Text>
+                  {aboutMe ? (
+                    <Text className="text-white/60 text-xs mt-0.5" numberOfLines={1}>
+                      + About Me configured
+                    </Text>
+                  ) : (
+                    <Text className="text-white/50 text-xs mt-0.5">
+                      Tap to add personal details
+                    </Text>
+                  )}
+                </View>
+                <ChevronRight size={20} color="rgba(255, 255, 255, 0.5)" />
+              </View>
+            </Pressable>
+
             {/* Message Input with Image Button */}
             <View
               className="bg-white/10 rounded-2xl p-4 mb-6"

@@ -47,14 +47,24 @@ STRICT HUMAN TEXTING RULES — follow these every time to sound natural:
 
 function buildDynamicSystemPrompt(userPersona: string, userAboutMe: string): string {
   const aboutMeSection = userAboutMe.trim()
-    ? `\n\nUSER'S PERSONAL DETAILS (likes, dislikes, quirks, etc.):\n${userAboutMe}\n(Use this to naturally infuse the reply with the user's real interests, avoidances, and personality traits. Weave in a like/dislike if it fits the context, or add a quirk subtly.)`
+    ? `
+
+USER'S PERSONAL DETAILS (About Me):
+${userAboutMe}
+
+IMPORTANT: Combine the persona style above with these personal details. Use their interests, dislikes, and quirks to make replies feel authentic to who they are. For example:
+- If they mention loving hiking, naturally reference outdoor activities when relevant
+- If they have a quirk like quoting movies, occasionally slip in a reference
+- If they dislike something, avoid mentioning it positively
+- Weave these details subtly — don't force them into every reply`
     : '';
 
   return `${CACHED_SYSTEM_PROMPT_PREFIX}
 
 USER'S CHOSEN PERSONA/VIBE:
 ${userPersona}
-(Apply this personality consistently to all replies.)${aboutMeSection}`;
+
+Apply this personality style consistently to all replies.${aboutMeSection}`;
 }
 
 function buildUserPrompt(conversationText: string, count: number): string {
