@@ -247,7 +247,7 @@ export function HomeScreen() {
                     </Text>
                   ) : (
                     <Text className="text-white/50 text-xs mt-0.5">
-                      Tap to add personal details
+                      Tap to edit persona & About Me
                     </Text>
                   )}
                 </View>
