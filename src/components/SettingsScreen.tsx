@@ -170,7 +170,7 @@ export function SettingsScreen() {
               >
                 <Zap size={20} color="#FFF" />
                 <Text className="text-white font-bold ml-2">
-                  Upgrade for More Replies + Screenshots
+                  Upgrade for More Replies + Screenshot Uploads
                 </Text>
               </Pressable>
             )}

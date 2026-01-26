@@ -98,10 +98,16 @@ export const useTokenStore = create<TokenState>((set, get) => ({
 
       const loadedPlanType = (planType as PlanType) || 'free';
 
+      // For free users, cap tokens at daily limit (handles migration from old limits)
+      let loadedTokens = tokens ? parseInt(tokens, 10) : FREE_DAILY_LIMIT;
+      if (loadedPlanType === 'free' && loadedTokens > FREE_DAILY_LIMIT) {
+        loadedTokens = FREE_DAILY_LIMIT;
+      }
+
       set({
         isProUser: proStatus === 'true',
         planType: loadedPlanType,
-        tokens: tokens ? parseInt(tokens, 10) : FREE_DAILY_LIMIT,
+        tokens: loadedTokens,
         weeklyResetDate: weeklyReset || getNextSunday(),
         dailyResetDate: dailyReset || getTomorrowMidnight(),
         hasSeenOnboarding: onboarding === 'true',
