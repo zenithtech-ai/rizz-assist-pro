@@ -74,11 +74,22 @@ export function HomeScreen() {
 
     // Try AI generation first, fall back to local if it fails
     try {
+      console.log('Generating replies with:', {
+        hasText: !!message.trim(),
+        hasImage: !!screenshotUri,
+        style: selectedStyle
+      });
+
       const result = await generateAIReplies({
         conversationText: message.trim() || undefined,
         imageUri: screenshotUri || undefined,
         style: selectedStyle,
         count: 3,
+      });
+
+      console.log('AI result:', {
+        repliesCount: result.replies.length,
+        error: result.error
       });
 
       if (result.replies.length > 0) {
@@ -88,13 +99,16 @@ export function HomeScreen() {
           setScreenshotUri(null);
           setHasScreenshot(false);
         }
-      } else {
+      } else if (result.error) {
+        console.error('AI generation error:', result.error);
         // Fallback to local generation (only works with text)
         if (message.trim()) {
           const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
           setGeneratedReplies(localReplies);
-        } else {
-          console.error('AI generation failed and no text for fallback');
+        }
+        // If only screenshot and it failed, show error via haptic
+        if (screenshotUri && !message.trim()) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         }
       }
     } catch (error) {
@@ -102,6 +116,10 @@ export function HomeScreen() {
       if (message.trim()) {
         const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
         setGeneratedReplies(localReplies);
+      }
+      // If only screenshot and it failed, show error via haptic
+      if (screenshotUri && !message.trim()) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     }
 
@@ -180,8 +198,8 @@ export function HomeScreen() {
               }}
             >
               <View className="flex-row items-center justify-between mb-2">
-                <Text className="text-white/70 text-sm font-medium">
-                  Paste their message...
+                <Text className="text-white/70 text-sm font-medium" style={{ flex: 1, marginRight: 8 }}>
+                  Paste their message or upload a screenshot
                 </Text>
                 <Pressable
                   onPress={handlePickImage}
