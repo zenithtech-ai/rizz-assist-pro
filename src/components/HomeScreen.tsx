@@ -281,8 +281,7 @@ export function HomeScreen() {
                 </Text>
                 <Text className="text-white/90 text-center text-xl font-semibold">
                   Stop sounding generic.{'\n'}Get replies that sound{' '}
-                  <Text style={{ color: COLORS.neonPink }}>100% like you</Text>
-                  {' '}- instantly.
+                  <Text style={{ color: COLORS.neonPink }}>100% like you</Text> - instantly.
                 </Text>
               </Animated.View>
 

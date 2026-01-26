@@ -73,9 +73,9 @@ const getMaxTokensForPlan = (plan: PlanType): number => {
 };
 
 export const useTokenStore = create<TokenState>((set, get) => ({
-  isProUser: false,
-  planType: 'free' as PlanType,
-  tokens: FREE_DAILY_LIMIT,
+  isProUser: true,
+  planType: 'gold' as PlanType,
+  tokens: GOLD_MONTHLY_TOKENS,
   weeklyResetDate: getNextSunday(),
   dailyResetDate: getTomorrowMidnight(),
   hasSeenOnboarding: false,
