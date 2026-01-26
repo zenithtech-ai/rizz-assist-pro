@@ -13,11 +13,13 @@ import {
   Shield,
   AlertCircle,
   Mail,
+  Sparkles,
 } from 'lucide-react-native';
 
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
 import { useTokenStore } from '@/lib/tokenStore';
+import { usePersonaStore, PERSONAS } from '@/lib/personaStore';
 import {
   COLORS,
   FREE_TOKEN_LIMIT,
@@ -38,6 +40,12 @@ export function SettingsScreen() {
   const isProUser = useTokenStore((s) => s.isProUser);
   const restorePurchase = useTokenStore((s) => s.restorePurchase);
   const weeklyResetDate = useTokenStore((s) => s.weeklyResetDate);
+
+  // Persona store
+  const selectedPersonaId = usePersonaStore((s) => s.selectedPersonaId);
+  const currentPersona = selectedPersonaId === 'custom'
+    ? { name: 'Custom Vibe', emoji: '✨' }
+    : PERSONAS.find(p => p.id === selectedPersonaId) || PERSONAS[0];
 
   const maxTokens = isProUser ? PRO_WEEKLY_TOKENS : FREE_TOKEN_LIMIT;
 
@@ -143,6 +151,41 @@ export function SettingsScreen() {
                 <Text className="text-white font-bold">Upgrade to Pro</Text>
               </Pressable>
             )}
+          </View>
+
+          {/* My Vibe & Profile Section */}
+          <View className="mb-6">
+            <Text className="text-white/60 text-sm font-medium uppercase mb-3 ml-1">
+              Personalization
+            </Text>
+
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/my-vibe');
+              }}
+              className="bg-white/10 rounded-2xl p-4 flex-row items-center justify-between active:opacity-80"
+              style={{
+                borderWidth: 1,
+                borderColor: 'rgba(255, 105, 180, 0.3)',
+              }}
+            >
+              <View className="flex-row items-center flex-1">
+                <View
+                  className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                  style={{ backgroundColor: 'rgba(255, 105, 180, 0.2)' }}
+                >
+                  <Text className="text-xl">{currentPersona.emoji}</Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-white font-bold">My Vibe & Profile</Text>
+                  <Text className="text-white/60 text-sm">
+                    Current: {currentPersona.name}
+                  </Text>
+                </View>
+              </View>
+              <Sparkles size={20} color={COLORS.neonPink} />
+            </Pressable>
           </View>
 
           {/* Actions */}

@@ -5,6 +5,10 @@ AI-powered dating assistant app that generates contextual reply suggestions base
 ## Features
 
 - **10 Reply Styles**: Flirty, Seductive, Funny, Roast, Smooth, Compliment, Ask Out, Get Number, Tease, Bold Move
+- **9 Persona Presets**: Cheeky Tease, Smooth Charmer, Witty Banter, Bold Direct, Mysterious Intrigue, Cute Wholesome, Edgy Sarcastic, Thoughtful Deep, Adventurous Fun
+- **Custom Persona**: Define your own personality/style
+- **About Me Profile**: Add personal details (likes, dislikes, quirks) for more personalized replies
+- **Screenshot Analysis**: Upload conversation screenshots for AI to read and respond to
 - **Token System**: 5 free lifetime replies, Pro users get 25 tokens/week
 - **Subscription**: Monthly ($10.99) or Yearly ($109.99 - 17% savings)
 - **Dark Mode**: Beautiful purple-to-pink gradient design
@@ -15,8 +19,9 @@ AI-powered dating assistant app that generates contextual reply suggestions base
 2. **Disclaimer Modal** - User must accept terms on first launch
 3. **Onboarding** (3 screens) - Feature introduction
 4. **Home Screen** - Main reply generation interface
-5. **Paywall** - Upgrade to Pro modal
-6. **Settings** - Account management and legal documents
+5. **My Vibe & Profile** - Persona selection and personal details
+6. **Paywall** - Upgrade to Pro modal
+7. **Settings** - Account management and legal documents
 
 ## Structure
 
@@ -25,6 +30,7 @@ src/
 ├── app/
 │   ├── _layout.tsx      # Root layout with app flow
 │   ├── paywall.tsx      # Subscription paywall modal
+│   ├── my-vibe.tsx      # My Vibe & Profile screen
 │   └── (tabs)/
 │       ├── _layout.tsx  # Tab navigation
 │       ├── index.tsx    # Home tab
@@ -35,6 +41,7 @@ src/
 │   ├── OnboardingScreen.tsx
 │   ├── HomeScreen.tsx
 │   ├── SettingsScreen.tsx
+│   ├── MyVibeScreen.tsx    # Persona & profile editor
 │   ├── TokenCounter.tsx
 │   ├── StyleButton.tsx
 │   ├── ReplyBubble.tsx
@@ -42,9 +49,10 @@ src/
 └── lib/
     ├── constants.ts     # Colors, mock data, legal text
     ├── knowledgeBase.ts # AI knowledge base for reply generation
-    ├── openai.ts        # OpenAI GPT-4o API integration
+    ├── openai.ts        # OpenAI GPT-4o API integration with persona injection
     ├── replyGenerator.ts # Local fallback reply generator
-    ├── tokenStore.ts    # Zustand store with AsyncStorage
+    ├── tokenStore.ts    # Zustand store for tokens/subscription
+    ├── personaStore.ts  # Zustand store for personas and about me
     └── cn.ts            # Tailwind class merger
 ```
 
@@ -54,57 +62,46 @@ The app uses **GPT-4o** to generate contextual, style-specific replies:
 
 - **Primary**: OpenAI GPT-4o API (`src/lib/openai.ts`)
 - **Fallback**: Local template-based generator (`src/lib/replyGenerator.ts`)
+- **Vision**: Screenshot analysis with GPT-4o vision
 
-The AI is guided by a comprehensive knowledge base with:
-- Core texting principles (be playful, use push-pull, etc.)
-- Style-specific techniques and example messages
-- Things to avoid for each style
+### Persona System
 
-## AI Knowledge Base
+The AI system prompt now includes:
+- **User's Chosen Persona**: One of 9 pre-defined personas or custom text
+- **User's About Me**: Personal details to make replies more personalized
+- **Human Texting Rules**: Strict formatting rules to sound natural (contractions, fillers, emojis, etc.)
 
-The app includes a comprehensive knowledge base (`src/lib/knowledgeBase.ts`) that provides:
+### Prompt Caching
 
-- **Core Texting Principles**: Foundational rules for effective messaging (be playful, use push-pull, etc.)
-- **Style-Specific Guidance**: Detailed principles, techniques, and examples for each of the 10 reply styles
-- **Situational Responses**: How to handle flakes, no responses, and "shit tests"
-- **Question Responses**: Clever responses to common questions
+The system prompt is structured for OpenAI prompt caching:
+- Fixed prefix (persona descriptions, texting rules) - cacheable
+- Dynamic suffix (user's persona, about me) - injected per request
 
-Each style includes:
-- Principles to follow
-- Named techniques with example messages
-- Things to avoid (doNots)
+## Persona Presets
 
-Use `getStylePrompt(styleId)` to generate AI-ready prompts for each style.
+| Persona | Description |
+|---------|-------------|
+| Cheeky Tease | Sarcastic, playful banter, dry humor, light roasting |
+| Smooth Charmer | Confident, charming, respectful, thoughtful compliments |
+| Witty Banter | Fast, clever replies, ironic humor, meme-like energy |
+| Bold Direct | Straightforward, no games, clear flirty intent |
+| Mysterious Intrigue | Short, enigmatic, subtle flirt, builds curiosity |
+| Cute Wholesome | Sweet, bubbly, warm, positive, affectionate |
+| Edgy Sarcastic | Sharp wit, playful call-outs, enjoys banter battles |
+| Thoughtful Deep | Intellectual, meaningful questions, emotional connection |
+| Adventurous Fun | Energetic, spontaneous ideas, high-energy flirt |
 
 ## Token System
 
 - **Free Users**: 5 lifetime tokens
 - **Pro Users**: 25 tokens/week (resets Sunday)
-- Each "Generate 5 Replies" costs 1 token
+- Each "Generate Replies" costs 1 token
 - Local storage only (AsyncStorage)
 
 ## Subscription Products (for App Store Connect / Play Console)
 
 - `rizzassist.pro.monthly` - $10.99/month
 - `rizzassist.pro.yearly` - $109.99/year
-
-## TODO: Native Purchases
-
-The app includes placeholder code for StoreKit 2 (iOS) and Play Billing (Android):
-
-```typescript
-// iOS StoreKit 2
-const mockMonthlyPurchase = async () => {
-    console.log("TODO: StoreKit 2 - rizzassist.pro.monthly");
-    setProStatus(true); setTokens(25);
-};
-
-// Android Play Billing
-const mockYearlyPurchase = async () => {
-    console.log("TODO: BillingClient - rizzassist.pro.yearly");
-    setProStatus(true); setTokens(25);
-};
-```
 
 ## Legal
 

@@ -1,5 +1,5 @@
 // OpenAI API Service for Rizz Assist Pro
-import { CORE_PRINCIPLES, STYLE_GUIDANCE } from './knowledgeBase';
+// With persona injection and prompt caching optimization
 
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_VIBECODE_OPENAI_API_KEY;
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
@@ -9,6 +9,8 @@ export interface GenerateRepliesParams {
   imageBase64?: string;
   style: string;
   count?: number;
+  userPersona?: string;
+  userAboutMe?: string;
 }
 
 export interface GenerateRepliesResult {
@@ -17,54 +19,59 @@ export interface GenerateRepliesResult {
   error?: string;
 }
 
-function buildSystemPrompt(style: string): string {
-  const styleGuidance = STYLE_GUIDANCE[style];
+// Cached system prompt - this is the fixed part that can be cached by OpenAI
+// The persona descriptions and texting rules are static
+const CACHED_SYSTEM_PROMPT_PREFIX = `You are replying AS the user in a dating app chat (Tinder, Hinge, Bumble style). Output ONLY the raw message text they would copy-paste and send — no explanations, no suggestions, no extra text, no formatting.
 
-  const basePrompt = `You are Rizz Assist Pro, an AI dating assistant that generates contextual reply suggestions for text conversations. Your job is to create witty, engaging, and effective replies.
+PRE-DEFINED PERSONA DESCRIPTIONS:
+- Cheeky Tease: Sarcastic, playful banter, dry humor, light roasting, confident but chill. You tease just enough to keep things interesting without being mean.
+- Smooth Charmer: Confident, charming, respectful, builds intrigue with thoughtful compliments. You make them feel special without being over the top.
+- Witty Banter: Fast, clever replies, ironic humor, meme-like energy, quick comebacks. You match their energy and keep the convo fun.
+- Bold Direct: Straightforward, no games, clear flirty intent, cuts through small talk. You say what you mean and mean what you say.
+- Mysterious Intrigue: Short, enigmatic, subtle flirt, leaves things open-ended to build curiosity. You keep them wanting more.
+- Cute Wholesome: Sweet, bubbly, warm, positive, affectionate, light-hearted compliments. You radiate good vibes.
+- Edgy Sarcastic: Sharp wit, playful call-outs, enjoys banter battles, a bit bold. You're not afraid to keep them on their toes.
+- Thoughtful Deep: Intellectual, asks meaningful questions, builds emotional connection. You go beyond surface level.
+- Adventurous Fun: Energetic, suggests spontaneous ideas, high-energy flirt, fun vibes. You bring the excitement.
 
-CORE PRINCIPLES:
-${CORE_PRINCIPLES.map(p => `- ${p}`).join('\n')}
+STRICT HUMAN TEXTING RULES — follow these every time to sound natural:
+- Heavy contractions: I'm, you're, it's, gonna, wanna, could've
+- Vary sentence lengths wildly: short punchy ones, fragments, longer rambling thoughts
+- Natural fillers: tbh, idk, like, kinda, hmm..., wait..., rephrase mid-sentence ("wait that sounded weird lol")
+- Ellipses for pauses... trailing thoughts...
+- Occasional tiny imperfections: "ur" instead of "your" sometimes, rare small typo (keep readable)
+- Emojis sparingly and fitting (max 1-2)
+- Perfectly match their tone/energy: short if short, escalate playfulness if flirty
+- Keep replies concise for texting: 1-4 sentences usually
+- Infuse the chosen persona's personality and user's personal details naturally into every reply`;
 
-CURRENT STYLE: ${style.toUpperCase()}
-${styleGuidance ? `
-Style Principles:
-${styleGuidance.principles.map(p => `- ${p}`).join('\n')}
+function buildDynamicSystemPrompt(userPersona: string, userAboutMe: string): string {
+  const aboutMeSection = userAboutMe.trim()
+    ? `\n\nUSER'S PERSONAL DETAILS (likes, dislikes, quirks, etc.):\n${userAboutMe}\n(Use this to naturally infuse the reply with the user's real interests, avoidances, and personality traits. Weave in a like/dislike if it fits the context, or add a quirk subtly.)`
+    : '';
 
-Example messages in this style:
-${styleGuidance.techniques.flatMap(t => t.examples.slice(0, 2).map(e => `- "${e.text}"`)).join('\n')}
+  return `${CACHED_SYSTEM_PROMPT_PREFIX}
 
-Things to AVOID:
-${styleGuidance.doNots.map(d => `- ${d}`).join('\n')}
-` : ''}
-
-IMPORTANT RULES:
-1. Generate replies that directly respond to the conversation context
-2. Keep replies concise (1-2 sentences max)
-3. Match the requested style while staying contextual
-4. Don't use generic pickup lines - be specific to what they said
-5. Use emoticons sparingly (:p ;) :) etc.) when appropriate for the style
-6. Never be crude, disrespectful, or inappropriate
-7. Each reply should be different - vary the approach
-8. Read the conversation carefully and respond to what was actually said`;
-
-  return basePrompt;
+USER'S CHOSEN PERSONA/VIBE:
+${userPersona}
+(Apply this personality consistently to all replies.)${aboutMeSection}`;
 }
 
-function buildUserPrompt(conversationText: string, style: string, count: number): string {
-  return `Based on this conversation, generate ${count} different ${style} replies I could send next.
-
-CONVERSATION:
+function buildUserPrompt(conversationText: string, count: number): string {
+  return `Full chat history / Her last message:
 ${conversationText}
 
-Generate exactly ${count} replies, one per line. Just the reply text, no numbering or labels. Each reply should be unique and match the ${style} style while being relevant to what they said.`;
+Generate exactly ${count} different replies I could send next, one per line. Just the reply text, no numbering or labels. Each reply should be unique while matching my persona and being relevant to what they said.
+
+Output ONLY the next reply texts — make them feel like a real person texting back right now.`;
 }
 
-function buildVisionPrompt(style: string, count: number): string {
+function buildVisionPrompt(count: number): string {
   return `Look at this screenshot of a text/dating conversation.
 
 First, identify the most recent message(s) from the other person that I need to respond to.
 
-Then generate ${count} different ${style} replies I could send next.
+Then generate ${count} different replies I could send next that match my persona.
 
 Format your response EXACTLY like this:
 EXTRACTED_TEXT: [The text from the conversation, especially the last message I need to respond to]
@@ -73,7 +80,9 @@ EXTRACTED_TEXT: [The text from the conversation, especially the last message I n
 [reply 2]
 [reply 3]
 
-Just the reply text after the ---, no numbering or labels. Each reply should be unique and match the ${style} style.`;
+Just the reply text after the ---, no numbering or labels. Each reply should be unique and match my persona while being relevant to what they said.
+
+Output ONLY the replies — make them feel like a real person texting back right now.`;
 }
 
 export async function generateReplies({
@@ -81,6 +90,8 @@ export async function generateReplies({
   imageBase64,
   style,
   count = 3,
+  userPersona = 'Cheeky Tease: Sarcastic, playful banter, dry humor, light roasting, confident but chill.',
+  userAboutMe = '',
 }: GenerateRepliesParams): Promise<GenerateRepliesResult> {
   if (!OPENAI_API_KEY) {
     return {
@@ -100,18 +111,24 @@ export async function generateReplies({
   }
 
   try {
-    let messages: Array<{ role: string; content: string | Array<{ type: string; text?: string; image_url?: { url: string } }> }>;
+    // Build the system prompt with persona and about me injected
+    const systemPrompt = buildDynamicSystemPrompt(userPersona, userAboutMe);
+
+    let messages: Array<{
+      role: string;
+      content: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
+    }>;
 
     if (hasImage) {
       // Use vision API for screenshot - base64 is already provided
       messages = [
-        { role: 'system', content: buildSystemPrompt(style) },
+        { role: 'system', content: systemPrompt },
         {
           role: 'user',
           content: [
             {
               type: 'text',
-              text: buildVisionPrompt(style, count),
+              text: buildVisionPrompt(count),
             },
             {
               type: 'image_url',
@@ -125,10 +142,12 @@ export async function generateReplies({
     } else {
       // Text-only request
       messages = [
-        { role: 'system', content: buildSystemPrompt(style) },
-        { role: 'user', content: buildUserPrompt(conversationText!, style, count) },
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: buildUserPrompt(conversationText!, count) },
       ];
     }
+
+    console.log('Sending to OpenAI with persona:', userPersona.substring(0, 50) + '...');
 
     const response = await fetch(OPENAI_ENDPOINT, {
       method: 'POST',
@@ -140,7 +159,7 @@ export async function generateReplies({
         model: 'gpt-4o',
         messages,
         max_completion_tokens: 800,
-        temperature: 1,
+        temperature: 1.1, // Slightly higher for more variety
       }),
     });
 

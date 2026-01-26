@@ -16,12 +16,13 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Sparkles, Image as ImageIcon, X } from 'lucide-react-native';
+import { Sparkles, Image as ImageIcon, X, User } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
 import { StyleButton } from '@/components/StyleButton';
 import { ReplyBubble } from '@/components/ReplyBubble';
 import { useTokenStore } from '@/lib/tokenStore';
+import { usePersonaStore, PERSONAS } from '@/lib/personaStore';
 import {
   COLORS,
   REPLY_STYLES,
@@ -48,6 +49,16 @@ export function HomeScreen() {
   const isProUser = useTokenStore((s) => s.isProUser);
   const consumeToken = useTokenStore((s) => s.useToken);
   const totalUses = useTokenStore((s) => s.totalUses);
+
+  // Persona store
+  const selectedPersonaId = usePersonaStore((s) => s.selectedPersonaId);
+  const getActivePersonaDescription = usePersonaStore((s) => s.getActivePersonaDescription);
+  const aboutMe = usePersonaStore((s) => s.aboutMe);
+
+  // Get current persona info for display
+  const currentPersona = selectedPersonaId === 'custom'
+    ? { name: 'Custom Vibe', emoji: '✨' }
+    : PERSONAS.find(p => p.id === selectedPersonaId) || PERSONAS[0];
 
   const handleGenerate = async () => {
     // Need either text or screenshot
@@ -77,7 +88,8 @@ export function HomeScreen() {
       console.log('Generating replies with:', {
         hasText: !!message.trim(),
         hasImage: !!screenshotBase64,
-        style: selectedStyle
+        style: selectedStyle,
+        persona: currentPersona.name
       });
 
       const result = await generateAIReplies({
@@ -85,6 +97,8 @@ export function HomeScreen() {
         imageBase64: screenshotBase64 || undefined,
         style: selectedStyle,
         count: 3,
+        userPersona: getActivePersonaDescription(),
+        userAboutMe: aboutMe,
       });
 
       console.log('AI result:', {
@@ -185,7 +199,21 @@ export function HomeScreen() {
               <Text className="text-white text-2xl font-bold">RIZZ ASSIST PRO</Text>
               <Text className="text-white/60 text-sm">AI Dating Assistant</Text>
             </View>
-            <TokenCounter />
+            <View className="flex-row items-center">
+              {/* My Vibe Button */}
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push('/my-vibe');
+                }}
+                className="mr-3 flex-row items-center px-3 py-2 rounded-full active:opacity-80"
+                style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+              >
+                <Text className="text-lg mr-1">{currentPersona.emoji}</Text>
+                <User size={16} color="rgba(255, 255, 255, 0.8)" />
+              </Pressable>
+              <TokenCounter />
+            </View>
           </View>
 
           <ScrollView

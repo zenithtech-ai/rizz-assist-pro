@@ -13,6 +13,7 @@ import { SplashScreen } from '@/components/SplashScreen';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
 import { OnboardingScreen } from '@/components/OnboardingScreen';
 import { useTokenStore } from '@/lib/tokenStore';
+import { usePersonaStore } from '@/lib/personaStore';
 
 export const unstable_settings = {
   initialRouteName: '(tabs)',
@@ -37,6 +38,13 @@ function RootLayoutNav() {
             presentation: 'modal',
           }}
         />
+        <Stack.Screen
+          name="my-vibe"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );
@@ -46,6 +54,7 @@ export default function RootLayout() {
   const [appState, setAppState] = useState<AppState>('splash');
 
   const loadState = useTokenStore((s) => s.loadState);
+  const loadPersonaState = usePersonaStore((s) => s.loadState);
   const isLoaded = useTokenStore((s) => s.isLoaded);
   const hasAcceptedDisclaimer = useTokenStore((s) => s.hasAcceptedDisclaimer);
   const hasSeenOnboarding = useTokenStore((s) => s.hasSeenOnboarding);
@@ -54,6 +63,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     loadState();
+    loadPersonaState();
   }, []);
 
   useEffect(() => {
