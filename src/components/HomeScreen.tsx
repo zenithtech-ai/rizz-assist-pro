@@ -143,16 +143,16 @@ export function HomeScreen() {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: false,
-        aspect: [4, 3],
-        quality: 1,
+        quality: 0.7, // Reduce quality to make base64 smaller
+        base64: true, // Request base64 directly from picker
       });
 
-      if (!result.canceled) {
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
         // Store the image URI for vision API processing
-        const uri = result.assets[0].uri;
-        setScreenshotUri(uri);
+        setScreenshotUri(asset.uri);
         setHasScreenshot(true);
-        console.log('Screenshot uploaded:', uri);
+        console.log('Screenshot uploaded:', asset.uri);
       }
     } catch (error) {
       console.error('Image picker error:', error);

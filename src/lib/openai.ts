@@ -79,6 +79,34 @@ Just the reply text after the ---, no numbering or labels. Each reply should be 
 
 async function imageToBase64(uri: string): Promise<string> {
   try {
+    console.log('Reading image from URI:', uri);
+
+    // Check if file exists and get info
+    const fileInfo = await FileSystem.getInfoAsync(uri);
+    console.log('File info:', fileInfo);
+
+    if (!fileInfo.exists) {
+      // For some URIs (like ph:// on iOS), we need to copy to a local cache first
+      const filename = uri.split('/').pop() || 'image.jpg';
+      const localUri = FileSystem.cacheDirectory + filename;
+
+      try {
+        await FileSystem.copyAsync({
+          from: uri,
+          to: localUri,
+        });
+        console.log('Copied to local URI:', localUri);
+
+        const base64 = await FileSystem.readAsStringAsync(localUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        return base64;
+      } catch (copyError) {
+        console.error('Error copying file:', copyError);
+        throw new Error('Failed to copy image file');
+      }
+    }
+
     const base64 = await FileSystem.readAsStringAsync(uri, {
       encoding: FileSystem.EncodingType.Base64,
     });
