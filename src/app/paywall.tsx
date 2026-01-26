@@ -1,39 +1,44 @@
 // Rizz Assist Pro - Paywall Screen
 import React, { useState } from 'react';
-import { View, Text, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { X, Check, Sparkles, CreditCard } from 'lucide-react-native';
+import { X, Check, Sparkles, CreditCard, Camera, CameraOff } from 'lucide-react-native';
 
 import { useTokenStore } from '@/lib/tokenStore';
-import { COLORS, SUBSCRIPTION_PRODUCTS } from '@/lib/constants';
+import { COLORS, SUBSCRIPTION_PRODUCTS, FREE_DAILY_LIMIT, SILVER_MONTHLY_TOKENS, GOLD_MONTHLY_TOKENS } from '@/lib/constants';
+
+type PlanType = 'free' | 'silver' | 'gold';
 
 export default function PaywallScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>('gold');
 
   const purchasePro = useTokenStore((s) => s.purchasePro);
   const restorePurchase = useTokenStore((s) => s.restorePurchase);
 
-  const handlePurchase = async (plan: 'monthly' | 'yearly') => {
+  const handlePurchase = async (plan: PlanType) => {
+    if (plan === 'free') {
+      router.back();
+      return;
+    }
+
     setIsLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     // Mock purchase delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    if (plan === 'monthly') {
-      // TODO: iOS StoreKit 2
-      console.log('TODO: StoreKit 2 - rizzassist.pro.monthly');
+    if (plan === 'silver') {
+      console.log('TODO: StoreKit 2 - rizzassist.silver.monthly');
     } else {
-      // TODO: Android Play Billing
-      console.log('TODO: BillingClient - rizzassist.pro.yearly');
+      console.log('TODO: StoreKit 2 - rizzassist.gold.monthly');
     }
 
     await purchasePro();
@@ -41,7 +46,6 @@ export default function PaywallScreen() {
     setIsLoading(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    // Navigate back
     router.back();
   };
 
@@ -49,7 +53,6 @@ export default function PaywallScreen() {
     setIsLoading(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // Mock restore delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const success = await restorePurchase();
@@ -66,10 +69,35 @@ export default function PaywallScreen() {
     router.back();
   };
 
-  const benefits = [
-    'Unlimited replies',
-    '25 tokens/week auto-refill',
-    'No ads, no waiting',
+  const plans = [
+    {
+      id: 'free' as PlanType,
+      name: 'Free',
+      price: '$0',
+      period: '',
+      replies: `${FREE_DAILY_LIMIT} replies/day`,
+      screenshot: false,
+      highlight: false,
+    },
+    {
+      id: 'silver' as PlanType,
+      name: 'Silver',
+      price: SUBSCRIPTION_PRODUCTS.silver.price,
+      period: '/month',
+      replies: `${SILVER_MONTHLY_TOKENS.toLocaleString()} replies/month`,
+      screenshot: true,
+      highlight: false,
+    },
+    {
+      id: 'gold' as PlanType,
+      name: 'Gold',
+      price: SUBSCRIPTION_PRODUCTS.gold.price,
+      period: '/month',
+      replies: `${GOLD_MONTHLY_TOKENS.toLocaleString()} replies/month`,
+      screenshot: true,
+      highlight: true,
+      badge: 'BEST VALUE',
+    },
   ];
 
   return (
@@ -91,108 +119,104 @@ export default function PaywallScreen() {
           </View>
         </Pressable>
 
-        <View className="flex-1 justify-center px-6">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Header */}
-          <Animated.View entering={FadeInDown.delay(100)} className="items-center mb-8">
+          <Animated.View entering={FadeInDown.delay(100)} className="items-center mt-4 mb-6">
             <View className="bg-white/10 rounded-full p-4 mb-4">
               <Text className="text-5xl">🔥</Text>
             </View>
             <Text className="text-white text-3xl font-bold text-center">
-              Rizz Assist Pro
+              Choose Your Plan
             </Text>
-            <Text className="text-white/70 text-lg text-center mt-2">
-              UNLOCK ALL 10 STYLES
+            <Text className="text-white/70 text-base text-center mt-2">
+              More replies = more chances to connect
             </Text>
           </Animated.View>
 
-          {/* Benefits */}
-          <Animated.View entering={FadeInDown.delay(200)} className="mb-8">
-            {benefits.map((benefit, index) => (
-              <View key={index} className="flex-row items-center mb-3">
+          {/* Plan Cards */}
+          <Animated.View entering={FadeInDown.delay(200)} className="mb-6">
+            {plans.map((plan, index) => (
+              <Pressable
+                key={plan.id}
+                onPress={() => setSelectedPlan(plan.id)}
+                disabled={isLoading}
+                className="mb-3"
+              >
                 <View
-                  className="w-6 h-6 rounded-full items-center justify-center mr-3"
-                  style={{ backgroundColor: COLORS.tokenPro }}
+                  className="rounded-2xl p-4 overflow-hidden"
+                  style={{
+                    backgroundColor: selectedPlan === plan.id ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+                    borderWidth: selectedPlan === plan.id ? 2 : 1,
+                    borderColor: selectedPlan === plan.id
+                      ? (plan.highlight ? '#FFD700' : COLORS.neonPink)
+                      : 'rgba(255, 255, 255, 0.2)',
+                  }}
                 >
-                  <Check size={14} color="#FFFFFF" strokeWidth={3} />
+                  {plan.badge && (
+                    <View
+                      className="absolute top-0 right-0 px-3 py-1 rounded-bl-xl"
+                      style={{ backgroundColor: '#FFD700' }}
+                    >
+                      <Text className="text-xs font-bold text-black">{plan.badge}</Text>
+                    </View>
+                  )}
+
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-1">
+                      <Text className="text-white font-bold text-xl">{plan.name}</Text>
+                      <View className="flex-row items-baseline mt-1">
+                        <Text className="text-white text-2xl font-bold">{plan.price}</Text>
+                        {plan.period && (
+                          <Text className="text-white/60 text-sm ml-1">{plan.period}</Text>
+                        )}
+                      </View>
+                    </View>
+                    <View
+                      className="w-7 h-7 rounded-full border-2 items-center justify-center"
+                      style={{
+                        borderColor: selectedPlan === plan.id
+                          ? (plan.highlight ? '#FFD700' : COLORS.neonPink)
+                          : 'rgba(255, 255, 255, 0.5)',
+                        backgroundColor: selectedPlan === plan.id
+                          ? (plan.highlight ? '#FFD700' : COLORS.neonPink)
+                          : 'transparent',
+                      }}
+                    >
+                      {selectedPlan === plan.id && <Check size={16} color={plan.highlight ? '#000' : '#FFFFFF'} strokeWidth={3} />}
+                    </View>
+                  </View>
+
+                  {/* Features */}
+                  <View className="mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' }}>
+                    <View className="flex-row items-center mb-2">
+                      <Check size={14} color={COLORS.tokenPro} />
+                      <Text className="text-white/80 text-sm ml-2">{plan.replies}</Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      {plan.screenshot ? (
+                        <>
+                          <Camera size={14} color={COLORS.tokenPro} />
+                          <Text className="text-white/80 text-sm ml-2">Screenshot analysis enabled</Text>
+                        </>
+                      ) : (
+                        <>
+                          <CameraOff size={14} color={COLORS.tokenFree} />
+                          <Text className="text-white/50 text-sm ml-2">Screenshot analysis disabled</Text>
+                        </>
+                      )}
+                    </View>
+                  </View>
                 </View>
-                <Text className="text-white text-lg">{benefit}</Text>
-              </View>
+              </Pressable>
             ))}
           </Animated.View>
 
-          {/* Pricing Cards */}
-          <Animated.View entering={FadeInDown.delay(300)}>
-            {/* Yearly */}
-            <Pressable
-              onPress={() => setSelectedPlan('yearly')}
-              disabled={isLoading}
-              className="mb-3"
-            >
-              <View
-                className="rounded-2xl p-4 flex-row items-center justify-between"
-                style={{
-                  backgroundColor: selectedPlan === 'yearly' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                  borderWidth: selectedPlan === 'yearly' ? 2 : 1,
-                  borderColor: selectedPlan === 'yearly' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.2)',
-                }}
-              >
-                <View className="flex-1">
-                  <View className="flex-row items-center">
-                    <Text className="text-white font-bold text-lg">Yearly</Text>
-                    <View className="bg-green-500 rounded-full px-2 py-1 ml-2">
-                      <Text className="text-white text-xs font-bold">SAVE 17%</Text>
-                    </View>
-                  </View>
-                  <Text className="text-white/70 text-sm mt-1">
-                    {SUBSCRIPTION_PRODUCTS.yearly.price}
-                  </Text>
-                </View>
-                <View
-                  className="w-6 h-6 rounded-full border-2 items-center justify-center"
-                  style={{
-                    borderColor: selectedPlan === 'yearly' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.5)',
-                    backgroundColor: selectedPlan === 'yearly' ? COLORS.neonPink : 'transparent',
-                  }}
-                >
-                  {selectedPlan === 'yearly' && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
-                </View>
-              </View>
-            </Pressable>
-
-            {/* Monthly */}
-            <Pressable
-              onPress={() => setSelectedPlan('monthly')}
-              disabled={isLoading}
-            >
-              <View
-                className="rounded-2xl p-4 flex-row items-center justify-between"
-                style={{
-                  backgroundColor: selectedPlan === 'monthly' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                  borderWidth: selectedPlan === 'monthly' ? 2 : 1,
-                  borderColor: selectedPlan === 'monthly' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.2)',
-                }}
-              >
-                <View className="flex-1">
-                  <Text className="text-white font-bold text-lg">Monthly</Text>
-                  <Text className="text-white/70 text-sm mt-1">
-                    {SUBSCRIPTION_PRODUCTS.monthly.price}
-                  </Text>
-                </View>
-                <View
-                  className="w-6 h-6 rounded-full border-2 items-center justify-center"
-                  style={{
-                    borderColor: selectedPlan === 'monthly' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.5)',
-                    backgroundColor: selectedPlan === 'monthly' ? COLORS.neonPink : 'transparent',
-                  }}
-                >
-                  {selectedPlan === 'monthly' && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
-                </View>
-              </View>
-            </Pressable>
-          </Animated.View>
-
           {/* Subscribe Button */}
-          <Animated.View entering={FadeInUp.delay(400)} className="mt-6">
+          <Animated.View entering={FadeInUp.delay(300)}>
             <Pressable
               onPress={() => handlePurchase(selectedPlan)}
               disabled={isLoading}
@@ -212,7 +236,7 @@ export default function PaywallScreen() {
                 <>
                   <Sparkles size={24} color="#FFFFFF" />
                   <Text className="text-white font-bold text-lg ml-2">
-                    Subscribe Now
+                    {selectedPlan === 'free' ? 'Continue with Free' : 'Subscribe Now'}
                   </Text>
                 </>
               )}
@@ -237,7 +261,7 @@ export default function PaywallScreen() {
               Apple/Google will confirm. Cancel anytime in App Store/Play Store settings.
             </Text>
           </Animated.View>
-        </View>
+        </ScrollView>
       </LinearGradient>
     </View>
   );

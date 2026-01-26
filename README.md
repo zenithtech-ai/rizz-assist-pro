@@ -9,8 +9,12 @@ AI-powered dating assistant app that generates contextual reply suggestions base
 - **Custom Persona**: Define your own personality/style
 - **About Me Profile**: Add personal details (likes, dislikes, quirks) for more personalized replies
 - **Screenshot Analysis**: Upload conversation screenshots for AI to read and respond to
-- **Token System**: 5 free lifetime replies, Pro users get 25 tokens/week
-- **Subscription**: Monthly ($10.99) or Yearly ($109.99 - 17% savings)
+- **Token System**: Free users get 3 replies/day, Silver gets 1,500/month, Gold gets 3,000/month
+- **Screenshot Analysis**: Upload conversation screenshots for AI to read and respond to (Silver & Gold only)
+- **Subscription Plans**:
+  - Free: 3 replies/day, no screenshot analysis
+  - Silver: $9.95/month, 1,500 replies/month, screenshot analysis enabled
+  - Gold: $17.95/month, 3,000 replies/month, screenshot analysis enabled
 - **Dark Mode**: Beautiful purple-to-pink gradient design
 
 ## App Flow
@@ -93,15 +97,16 @@ The system prompt is structured for OpenAI prompt caching:
 
 ## Token System
 
-- **Free Users**: 5 lifetime tokens
-- **Pro Users**: 25 tokens/week (resets Sunday)
+- **Free Plan**: 3 replies per day (resets at midnight), screenshot analysis disabled
+- **Silver Plan**: 1,500 replies per month ($9.95/mo), screenshot analysis enabled
+- **Gold Plan**: 3,000 replies per month ($17.95/mo), screenshot analysis enabled
 - Each "Generate Replies" costs 1 token
 - Local storage only (AsyncStorage)
 
 ## Subscription Products (for App Store Connect / Play Console)
 
-- `rizzassist.pro.monthly` - $10.99/month
-- `rizzassist.pro.yearly` - $109.99/year
+- `rizzassist.silver.monthly` - $9.95/month (1,500 replies)
+- `rizzassist.gold.monthly` - $17.95/month (3,000 replies)
 
 ## Legal
 

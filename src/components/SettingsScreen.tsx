@@ -9,11 +9,11 @@ import {
   Crown,
   RotateCcw,
   ExternalLink,
-  FileText,
-  Shield,
-  AlertCircle,
   Mail,
   Sparkles,
+  Camera,
+  CameraOff,
+  Zap,
 } from 'lucide-react-native';
 
 import { CollapsibleSection } from '@/components/CollapsibleSection';
@@ -22,12 +22,37 @@ import { useTokenStore } from '@/lib/tokenStore';
 import { usePersonaStore, PERSONAS } from '@/lib/personaStore';
 import {
   COLORS,
-  FREE_TOKEN_LIMIT,
-  PRO_WEEKLY_TOKENS,
+  FREE_DAILY_LIMIT,
+  SILVER_MONTHLY_TOKENS,
+  GOLD_MONTHLY_TOKENS,
   TERMS_OF_SERVICE,
   PRIVACY_POLICY,
   DISCLAIMER_TEXT,
 } from '@/lib/constants';
+
+const getPlanDisplayName = (planType: string): string => {
+  switch (planType) {
+    case 'gold': return 'Gold Member';
+    case 'silver': return 'Silver Member';
+    default: return 'Free Plan';
+  }
+};
+
+const getMaxTokensForPlan = (planType: string): number => {
+  switch (planType) {
+    case 'gold': return GOLD_MONTHLY_TOKENS;
+    case 'silver': return SILVER_MONTHLY_TOKENS;
+    default: return FREE_DAILY_LIMIT;
+  }
+};
+
+const getPlanColor = (planType: string): string => {
+  switch (planType) {
+    case 'gold': return '#FFD700';
+    case 'silver': return '#C0C0C0';
+    default: return COLORS.tokenFree;
+  }
+};
 
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -38,6 +63,7 @@ export function SettingsScreen() {
 
   const tokens = useTokenStore((s) => s.tokens);
   const isProUser = useTokenStore((s) => s.isProUser);
+  const planType = useTokenStore((s) => s.planType);
   const restorePurchase = useTokenStore((s) => s.restorePurchase);
   const weeklyResetDate = useTokenStore((s) => s.weeklyResetDate);
 
@@ -47,7 +73,9 @@ export function SettingsScreen() {
     ? { name: 'Custom Vibe', emoji: '✨' }
     : PERSONAS.find(p => p.id === selectedPersonaId) || PERSONAS[0];
 
-  const maxTokens = isProUser ? PRO_WEEKLY_TOKENS : FREE_TOKEN_LIMIT;
+  const maxTokens = getMaxTokensForPlan(planType);
+  const screenshotEnabled = planType !== 'free';
+  const planColor = getPlanColor(planType);
 
   const handleRestorePurchases = async () => {
     setIsRestoring(true);
@@ -61,11 +89,8 @@ export function SettingsScreen() {
   };
 
   const handleManageSubscription = async () => {
-    // TODO: Deep link to App Store subscription management
     console.log('TODO: Open App Store subscription management');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    // Mock: Open App Store
     await Linking.openURL('https://apps.apple.com/account/subscriptions');
   };
 
@@ -105,50 +130,97 @@ export function SettingsScreen() {
           contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 100 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Pro Status Card */}
+          {/* Plan Status Card */}
           <View
             className="bg-white/10 rounded-2xl p-5 mb-6"
             style={{
-              borderWidth: 1,
-              borderColor: isProUser ? COLORS.tokenPro : 'rgba(255, 255, 255, 0.2)',
+              borderWidth: 2,
+              borderColor: planColor,
             }}
           >
-            <View className="flex-row items-center mb-3">
-              <Crown
-                size={24}
-                color={isProUser ? COLORS.tokenPro : 'rgba(255, 255, 255, 0.5)'}
-              />
+            <View className="flex-row items-center mb-4">
+              <Crown size={24} color={planColor} />
               <Text className="text-white font-bold text-xl ml-2">
-                {isProUser ? 'Pro Member' : 'Free User'}
+                {getPlanDisplayName(planType)}
               </Text>
             </View>
 
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-white/70">Tokens Remaining</Text>
+            {/* Replies Info */}
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-white/70">Replies Remaining</Text>
               <Text
                 className="font-bold text-lg"
-                style={{ color: isProUser ? COLORS.tokenPro : COLORS.tokenFree }}
+                style={{ color: planColor }}
               >
                 {tokens}/{maxTokens}
               </Text>
             </View>
 
-            {isProUser && (
-              <View className="flex-row justify-between items-center">
-                <Text className="text-white/70">Weekly Reset</Text>
-                <Text className="text-white/90 font-medium">
-                  {formatResetDate()}
+            {/* Reset Info */}
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-white/70">
+                {planType === 'free' ? 'Daily Reset' : 'Monthly Reset'}
+              </Text>
+              <Text className="text-white/90 font-medium">
+                {planType === 'free' ? 'Every midnight' : formatResetDate()}
+              </Text>
+            </View>
+
+            {/* Screenshot Status */}
+            <View
+              className="flex-row items-center justify-between p-3 rounded-xl mt-2"
+              style={{
+                backgroundColor: screenshotEnabled
+                  ? 'rgba(68, 255, 68, 0.1)'
+                  : 'rgba(255, 68, 68, 0.1)',
+              }}
+            >
+              <View className="flex-row items-center">
+                {screenshotEnabled ? (
+                  <Camera size={18} color={COLORS.tokenPro} />
+                ) : (
+                  <CameraOff size={18} color={COLORS.tokenFree} />
+                )}
+                <Text
+                  className="ml-2 font-medium"
+                  style={{ color: screenshotEnabled ? COLORS.tokenPro : COLORS.tokenFree }}
+                >
+                  Screenshot Analysis
                 </Text>
               </View>
-            )}
+              <Text
+                className="font-bold"
+                style={{ color: screenshotEnabled ? COLORS.tokenPro : COLORS.tokenFree }}
+              >
+                {screenshotEnabled ? 'Enabled' : 'Disabled'}
+              </Text>
+            </View>
 
+            {/* Upgrade Button for Free Users */}
             {!isProUser && (
               <Pressable
                 onPress={handleUpgrade}
-                className="mt-4 py-3 rounded-xl items-center active:opacity-80"
+                className="mt-4 py-4 rounded-xl items-center flex-row justify-center active:opacity-80"
                 style={{ backgroundColor: COLORS.neonPink }}
               >
-                <Text className="text-white font-bold">Upgrade to Pro</Text>
+                <Zap size={20} color="#FFFFFF" />
+                <Text className="text-white font-bold text-base ml-2">
+                  Unlock Screenshots & More Replies
+                </Text>
+              </Pressable>
+            )}
+
+            {/* Upgrade to Gold for Silver Users */}
+            {planType === 'silver' && (
+              <Pressable
+                onPress={handleUpgrade}
+                className="mt-4 py-3 rounded-xl items-center flex-row justify-center active:opacity-80"
+                style={{ backgroundColor: '#FFD700' }}
+              >
+                <Crown size={18} color="#000000" />
+                <Text className="text-black font-bold ml-2">
+                  Upgrade to Gold - 3,000 replies/mo
+                </Text>
               </Pressable>
             )}
           </View>
@@ -258,7 +330,7 @@ export function SettingsScreen() {
           <View className="mt-6 items-center">
             <Text className="text-white/40 text-sm">Rizz Assist Pro v1.0.0</Text>
             <Text className="text-white/30 text-xs mt-1">
-              Made with 🔥 for better conversations
+              Made with fire for better conversations
             </Text>
           </View>
         </ScrollView>

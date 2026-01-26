@@ -32,10 +32,8 @@ import {
   Image as ImageIcon,
   X,
   ChevronRight,
-  MessageCircle,
   Shield,
-  Zap,
-  Check,
+  Lock,
 } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
@@ -70,8 +68,12 @@ export function HomeScreen() {
 
   const tokens = useTokenStore((s) => s.tokens);
   const isProUser = useTokenStore((s) => s.isProUser);
+  const planType = useTokenStore((s) => s.planType);
   const consumeToken = useTokenStore((s) => s.useToken);
   const totalUses = useTokenStore((s) => s.totalUses);
+
+  // Screenshot is only available for paid users
+  const screenshotEnabled = planType !== 'free';
 
   // Persona store
   const selectedPersonaId = usePersonaStore((s) => s.selectedPersonaId);
@@ -191,6 +193,13 @@ export function HomeScreen() {
   };
 
   const handlePickImage = async () => {
+    // Check if screenshots are enabled for this plan
+    if (!screenshotEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      router.push('/paywall');
+      return;
+    }
+
     setIsLoadingImage(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
@@ -278,51 +287,26 @@ export function HomeScreen() {
               {/* Headline */}
               <Animated.Text
                 entering={FadeInDown.delay(300).duration(600)}
-                className="text-white text-center font-bold mb-5"
-                style={{ fontSize: 36, lineHeight: 42 }}
+                className="text-white text-center font-bold mb-4"
+                style={{ fontSize: 28, lineHeight: 34 }}
               >
                 Replies That Actually{'\n'}Sound Like{' '}
                 <Text style={{ color: COLORS.neonPink }}>You</Text>
               </Animated.Text>
 
               {/* Subtext */}
-              <Animated.View entering={FadeInDown.delay(400).duration(600)}>
+              <Animated.View entering={FadeInDown.delay(400).duration(600)} className="mb-8">
                 <Text className="text-white/70 text-center text-base leading-6 mb-2">
-                  Trained on advanced dating knowledge, psychology{'\n'}+ real-world texting patterns
-                </Text>
-                <Text className="text-white/70 text-center text-base leading-6 mb-6">
-                  Finetuned to your exact persona, style & quirks
+                  AI-powered dating replies trained on psychology
                 </Text>
                 <Text className="text-white/90 text-center text-lg font-medium">
-                  Stop sounding generic. Get replies that sound{'\n'}
-                  <Text style={{ color: COLORS.neonPink }}>100% like you</Text> - instantly.
+                  Get replies that sound{' '}
+                  <Text style={{ color: COLORS.neonPink }}>100% like you</Text>
                 </Text>
-              </Animated.View>
-
-              {/* Benefit Highlights */}
-              <Animated.View
-                entering={FadeInDown.delay(500).duration(600)}
-                className="mt-8 mb-8"
-              >
-                {[
-                  { icon: Zap, text: 'Personalized replies that match your unique vibe' },
-                  { icon: MessageCircle, text: 'No more awkward or robotic messages' },
-                  { icon: Check, text: 'Works instantly on Tinder, Hinge, Bumble & more' },
-                ].map((item, index) => (
-                  <View key={index} className="flex-row items-center mb-3">
-                    <View
-                      className="w-8 h-8 rounded-full items-center justify-center mr-3"
-                      style={{ backgroundColor: 'rgba(255, 105, 180, 0.15)' }}
-                    >
-                      <item.icon size={16} color={COLORS.neonPink} />
-                    </View>
-                    <Text className="text-white/80 text-sm flex-1">{item.text}</Text>
-                  </View>
-                ))}
               </Animated.View>
 
               {/* CTA Button */}
-              <Animated.View entering={FadeInUp.delay(600).duration(600)}>
+              <Animated.View entering={FadeInUp.delay(500).duration(600)}>
                 <Animated.View
                   style={[
                     {
@@ -343,7 +327,7 @@ export function HomeScreen() {
                   >
                     <Sparkles size={24} color="#FFFFFF" />
                     <Text className="text-white font-bold text-lg ml-2">
-                      Start Getting Better Replies
+                      Generate My Reply
                     </Text>
                   </Pressable>
                 </Animated.View>
@@ -367,14 +351,10 @@ export function HomeScreen() {
 
             {/* Trust/Social Proof Footer */}
             <Animated.View
-              entering={FadeIn.delay(800).duration(600)}
+              entering={FadeIn.delay(600).duration(600)}
               className="px-6 pb-4"
             >
               <View className="flex-row items-center justify-center">
-                <View className="flex-row items-center mr-6">
-                  <Sparkles size={12} color="rgba(255, 255, 255, 0.4)" />
-                  <Text className="text-white/40 text-xs ml-1">Powered by GPT-4o</Text>
-                </View>
                 <View className="flex-row items-center">
                   <Shield size={12} color="rgba(255, 255, 255, 0.4)" />
                   <Text className="text-white/40 text-xs ml-1">Your chats stay 100% private</Text>
@@ -465,17 +445,24 @@ export function HomeScreen() {
             >
               <View className="flex-row items-center justify-between mb-2">
                 <Text className="text-white/70 text-sm font-medium" style={{ flex: 1, marginRight: 8 }}>
-                  Paste their message or upload a screenshot
+                  {screenshotEnabled
+                    ? 'Paste their message or upload a screenshot'
+                    : 'Paste their message (screenshots: upgrade required)'}
                 </Text>
                 <Pressable
                   onPress={handlePickImage}
                   disabled={isLoadingImage}
-                  className="active:opacity-80"
+                  className="active:opacity-80 flex-row items-center"
                 >
                   {isLoadingImage ? (
                     <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
+                  ) : screenshotEnabled ? (
                     <ImageIcon size={20} color="rgba(255, 255, 255, 0.7)" />
+                  ) : (
+                    <View className="flex-row items-center">
+                      <Lock size={14} color={COLORS.tokenFree} />
+                      <ImageIcon size={20} color="rgba(255, 255, 255, 0.3)" style={{ marginLeft: 4 }} />
+                    </View>
                   )}
                 </Pressable>
               </View>
