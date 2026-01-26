@@ -1,17 +1,20 @@
 // OpenAI API Service for Rizz Assist Pro
-import { getStylePrompt, CORE_PRINCIPLES, STYLE_GUIDANCE } from './knowledgeBase';
+import * as FileSystem from 'expo-file-system';
+import { CORE_PRINCIPLES, STYLE_GUIDANCE } from './knowledgeBase';
 
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_VIBECODE_OPENAI_API_KEY;
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 
 export interface GenerateRepliesParams {
-  conversationText: string;
+  conversationText?: string;
+  imageUri?: string;
   style: string;
   count?: number;
 }
 
 export interface GenerateRepliesResult {
   replies: string[];
+  extractedText?: string;
   error?: string;
 }
 
@@ -57,10 +60,40 @@ ${conversationText}
 Generate exactly ${count} replies, one per line. Just the reply text, no numbering or labels. Each reply should be unique and match the ${style} style while being relevant to what they said.`;
 }
 
+function buildVisionPrompt(style: string, count: number): string {
+  return `Look at this screenshot of a text/dating conversation.
+
+First, identify the most recent message(s) from the other person that I need to respond to.
+
+Then generate ${count} different ${style} replies I could send next.
+
+Format your response EXACTLY like this:
+EXTRACTED_TEXT: [The text from the conversation, especially the last message I need to respond to]
+---
+[reply 1]
+[reply 2]
+[reply 3]
+
+Just the reply text after the ---, no numbering or labels. Each reply should be unique and match the ${style} style.`;
+}
+
+async function imageToBase64(uri: string): Promise<string> {
+  try {
+    const base64 = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    return base64;
+  } catch (error) {
+    console.error('Error reading image:', error);
+    throw new Error('Failed to read image');
+  }
+}
+
 export async function generateReplies({
   conversationText,
+  imageUri,
   style,
-  count = 5,
+  count = 3,
 }: GenerateRepliesParams): Promise<GenerateRepliesResult> {
   if (!OPENAI_API_KEY) {
     return {
@@ -69,14 +102,49 @@ export async function generateReplies({
     };
   }
 
-  if (!conversationText.trim()) {
+  const hasText = conversationText && conversationText.trim().length > 0;
+  const hasImage = imageUri && imageUri.length > 0;
+
+  if (!hasText && !hasImage) {
     return {
       replies: [],
-      error: 'No conversation text provided',
+      error: 'No conversation text or image provided',
     };
   }
 
   try {
+    let messages: Array<{ role: string; content: string | Array<{ type: string; text?: string; image_url?: { url: string } }> }>;
+
+    if (hasImage) {
+      // Use vision API for screenshot
+      const base64Image = await imageToBase64(imageUri);
+
+      messages = [
+        { role: 'system', content: buildSystemPrompt(style) },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: buildVisionPrompt(style, count),
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Image}`,
+              },
+            },
+          ],
+        },
+      ];
+    } else {
+      // Text-only request
+      messages = [
+        { role: 'system', content: buildSystemPrompt(style) },
+        { role: 'user', content: buildUserPrompt(conversationText!, style, count) },
+      ];
+    }
+
     const response = await fetch(OPENAI_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -85,11 +153,8 @@ export async function generateReplies({
       },
       body: JSON.stringify({
         model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: buildSystemPrompt(style) },
-          { role: 'user', content: buildUserPrompt(conversationText, style, count) },
-        ],
-        max_completion_tokens: 500,
+        messages,
+        max_completion_tokens: 800,
         temperature: 1,
       }),
     });
@@ -106,8 +171,24 @@ export async function generateReplies({
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
 
+    let extractedText: string | undefined;
+    let repliesContent = content;
+
+    // Parse vision response format
+    if (hasImage && content.includes('EXTRACTED_TEXT:')) {
+      const parts = content.split('---');
+      if (parts.length >= 2) {
+        const textPart = parts[0];
+        const extractMatch = textPart.match(/EXTRACTED_TEXT:\s*(.+)/s);
+        if (extractMatch) {
+          extractedText = extractMatch[1].trim();
+        }
+        repliesContent = parts.slice(1).join('---');
+      }
+    }
+
     // Parse replies - split by newlines and clean up
-    const replies = content
+    const replies = repliesContent
       .split('\n')
       .map((line: string) => line.trim())
       .filter((line: string) => line.length > 0)
@@ -115,7 +196,7 @@ export async function generateReplies({
         // Remove any numbering like "1." or "1)" or "- "
         return line.replace(/^[\d]+[.)\-]\s*/, '').replace(/^[-•]\s*/, '').trim();
       })
-      .filter((line: string) => line.length > 0)
+      .filter((line: string) => line.length > 0 && !line.startsWith('EXTRACTED_TEXT'))
       .slice(0, count);
 
     if (replies.length === 0) {
@@ -125,7 +206,7 @@ export async function generateReplies({
       };
     }
 
-    return { replies };
+    return { replies, extractedText };
   } catch (error) {
     console.error('Error generating replies:', error);
     return {

@@ -42,6 +42,7 @@ export function HomeScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [hasScreenshot, setHasScreenshot] = useState(false);
+  const [screenshotUri, setScreenshotUri] = useState<string | null>(null);
 
   const tokens = useTokenStore((s) => s.tokens);
   const isProUser = useTokenStore((s) => s.isProUser);
@@ -49,7 +50,8 @@ export function HomeScreen() {
   const totalUses = useTokenStore((s) => s.totalUses);
 
   const handleGenerate = async () => {
-    if (!message.trim()) {
+    // Need either text or screenshot
+    if (!message.trim() && !screenshotUri) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       return;
     }
@@ -73,22 +75,34 @@ export function HomeScreen() {
     // Try AI generation first, fall back to local if it fails
     try {
       const result = await generateAIReplies({
-        conversationText: message,
+        conversationText: message.trim() || undefined,
+        imageUri: screenshotUri || undefined,
         style: selectedStyle,
         count: 3,
       });
 
       if (result.replies.length > 0) {
         setGeneratedReplies(result.replies);
+        // Clear screenshot after successful generation
+        if (screenshotUri) {
+          setScreenshotUri(null);
+          setHasScreenshot(false);
+        }
       } else {
-        // Fallback to local generation
-        const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
-        setGeneratedReplies(localReplies);
+        // Fallback to local generation (only works with text)
+        if (message.trim()) {
+          const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
+          setGeneratedReplies(localReplies);
+        } else {
+          console.error('AI generation failed and no text for fallback');
+        }
       }
     } catch (error) {
       console.error('AI generation failed, using fallback:', error);
-      const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
-      setGeneratedReplies(localReplies);
+      if (message.trim()) {
+        const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
+        setGeneratedReplies(localReplies);
+      }
     }
 
     setIsGenerating(false);
@@ -116,10 +130,11 @@ export function HomeScreen() {
       });
 
       if (!result.canceled) {
-        // TODO: Send image to OCR API to extract text
-        console.log('TODO: Extract text from screenshot:', result.assets[0].uri);
-        // Show screenshot uploaded indicator
+        // Store the image URI for vision API processing
+        const uri = result.assets[0].uri;
+        setScreenshotUri(uri);
         setHasScreenshot(true);
+        console.log('Screenshot uploaded:', uri);
       }
     } catch (error) {
       console.error('Image picker error:', error);
@@ -197,7 +212,10 @@ export function HomeScreen() {
                     <Text className="text-white/80 text-sm ml-2">Screenshot uploaded</Text>
                   </View>
                   <Pressable
-                    onPress={() => setHasScreenshot(false)}
+                    onPress={() => {
+                      setHasScreenshot(false);
+                      setScreenshotUri(null);
+                    }}
                     className="p-1 active:opacity-70"
                   >
                     <X size={16} color="rgba(255, 255, 255, 0.6)" />
