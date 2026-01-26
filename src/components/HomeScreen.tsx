@@ -23,10 +23,10 @@ import { useTokenStore } from '@/lib/tokenStore';
 import {
   COLORS,
   REPLY_STYLES,
-  MOCK_REPLIES,
   ReplyStyleId,
   FREE_TOKEN_LIMIT,
 } from '@/lib/constants';
+import { generateReplies } from '@/lib/replyGenerator';
 
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -67,9 +67,9 @@ export function HomeScreen() {
     // Simulate AI generation delay
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // Get replies for selected style
-    const replies = MOCK_REPLIES[selectedStyle];
-    setGeneratedReplies([...replies]);
+    // Generate context-aware replies based on pasted message
+    const replies = generateReplies(message, selectedStyle);
+    setGeneratedReplies(replies);
     setIsGenerating(false);
 
     // Check if this was the last free token
