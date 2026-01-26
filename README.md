@@ -41,9 +41,26 @@ src/
 │   └── CollapsibleSection.tsx
 └── lib/
     ├── constants.ts     # Colors, mock data, legal text
+    ├── knowledgeBase.ts # AI knowledge base for reply generation
     ├── tokenStore.ts    # Zustand store with AsyncStorage
     └── cn.ts            # Tailwind class merger
 ```
+
+## AI Knowledge Base
+
+The app includes a comprehensive knowledge base (`src/lib/knowledgeBase.ts`) that provides:
+
+- **Core Texting Principles**: Foundational rules for effective messaging (be playful, use push-pull, etc.)
+- **Style-Specific Guidance**: Detailed principles, techniques, and examples for each of the 10 reply styles
+- **Situational Responses**: How to handle flakes, no responses, and "shit tests"
+- **Question Responses**: Clever responses to common questions
+
+Each style includes:
+- Principles to follow
+- Named techniques with example messages
+- Things to avoid (doNots)
+
+Use `getStylePrompt(styleId)` to generate AI-ready prompts for each style.
 
 ## Token System
 
