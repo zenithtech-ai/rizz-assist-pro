@@ -136,7 +136,7 @@ export function MyVibeScreen() {
                   </View>
 
                   <Text className="text-white/40 text-xs mt-2 ml-1">
-                    Optional but recommended - helps AI craft replies that sound like you
+                    This is optional but is recommended - this helps AI craft replies that sound more like you
                   </Text>
                 </>
               ) : (
