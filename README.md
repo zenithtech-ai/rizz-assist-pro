@@ -23,13 +23,13 @@ AI-powered dating assistant app that generates contextual reply suggestions base
 1. **Splash Screen** (2s) - Animated logo and branding
 2. **Disclaimer Modal** - User must accept terms on first launch
 3. **Onboarding** (3 screens) - Feature introduction
-4. **Home Screen** - Beautiful hero welcome screen with "Generate My Reply Now" button
-5. **Reply Generator Page** - Main reply generation interface with tone/action selectors
-6. **Profile Analysis** - Upload dating profiles for analysis and opener suggestions
-7. **Account** - View plan status, My Vibe, and About Me
-8. **My Vibe & Profile** - Persona selection and personal details
-9. **Paywall** - Upgrade to Pro modal
-10. **Settings** - Account management and legal documents
+4. **Home Tab** - Beautiful hero welcome screen with profile setup link
+5. **Replies Tab** - Main reply generation interface with tone/action selectors
+6. **Analyze Tab** - Upload dating profiles for analysis and opener suggestions
+7. **Account Tab** - View plan status, My Vibe, and About Me
+8. **Settings Tab** - Account management and legal documents
+9. **My Vibe Modal** - Persona selection and personal details
+10. **Paywall Modal** - Upgrade to Pro
 
 ## Structure
 
@@ -37,22 +37,22 @@ AI-powered dating assistant app that generates contextual reply suggestions base
 src/
 ├── app/
 │   ├── _layout.tsx      # Root layout with app flow
-│   ├── reply-generator.tsx  # Reply generation interface
 │   ├── paywall.tsx      # Subscription paywall modal
 │   ├── my-vibe.tsx      # My Vibe & Profile screen
 │   └── (tabs)/
-│       ├── _layout.tsx         # Tab navigation (4 tabs)
+│       ├── _layout.tsx         # Tab navigation (5 tabs)
 │       ├── index.tsx           # Home tab (hero welcome screen)
-│       ├── profile-analysis.tsx # Profile Analysis tab
+│       ├── reply-generator.tsx # Replies tab (reply generation interface)
+│       ├── profile-analysis.tsx # Analyze tab
 │       ├── account.tsx         # Account tab
 │       └── settings.tsx        # Settings tab
 ├── components/
 │   ├── SplashScreen.tsx
 │   ├── DisclaimerModal.tsx
 │   ├── OnboardingScreen.tsx
-│   ├── HomeScreen.tsx          # Hero welcome screen - navigates to reply-generator
-│   ├── ProfileAnalysisScreen.tsx # New - profile analysis feature
-│   ├── AccountScreen.tsx       # New - account & About Me display
+│   ├── HomeScreen.tsx          # Hero welcome screen
+│   ├── ProfileAnalysisScreen.tsx
+│   ├── AccountScreen.tsx
 │   ├── SettingsScreen.tsx
 │   ├── MyVibeScreen.tsx        # Persona & profile editor
 │   ├── TokenCounter.tsx

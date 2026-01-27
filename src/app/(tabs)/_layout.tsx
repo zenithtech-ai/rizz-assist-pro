@@ -1,7 +1,7 @@
 // Rizz Assist Pro - Tab Layout
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Home, Settings, User, ScanSearch } from 'lucide-react-native';
+import { Home, Settings, User, ScanSearch, MessageCircle } from 'lucide-react-native';
 import { COLORS } from '@/lib/constants';
 
 export default function TabLayout() {
@@ -30,6 +30,13 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="reply-generator"
+        options={{
+          title: 'Replies',
+          tabBarIcon: ({ color, size }) => <MessageCircle size={size} color={color} />,
         }}
       />
       <Tabs.Screen

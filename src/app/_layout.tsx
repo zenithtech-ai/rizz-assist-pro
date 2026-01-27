@@ -32,12 +32,6 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
-          name="reply-generator"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
           name="paywall"
           options={{
             headerShown: false,

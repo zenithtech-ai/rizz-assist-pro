@@ -1,5 +1,5 @@
 // Rizz Assist Pro - Home Screen (Modern Hero Layout)
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -13,15 +13,8 @@ import Animated, {
   FadeIn,
   FadeInDown,
   FadeInUp,
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
-  Easing,
 } from 'react-native-reanimated';
 import {
-  Sparkles,
   ChevronRight,
 } from 'lucide-react-native';
 
@@ -31,29 +24,6 @@ import { COLORS } from '@/lib/constants';
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-
-  // Animated button glow
-  const glowOpacity = useSharedValue(0.4);
-
-  useEffect(() => {
-    glowOpacity.value = withRepeat(
-      withSequence(
-        withTiming(0.8, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0.4, { duration: 1500, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      false
-    );
-  }, []);
-
-  const animatedGlowStyle = useAnimatedStyle(() => ({
-    shadowOpacity: glowOpacity.value,
-  }));
-
-  const handleStartGenerating = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push('/reply-generator');
-  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -103,40 +73,14 @@ export function HomeScreen() {
               </Text>
             </Animated.View>
 
-            {/* CTA Button */}
+            {/* Edit Persona Link */}
             <Animated.View entering={FadeInUp.delay(500).duration(600)}>
-              <Animated.View
-                style={[
-                  {
-                    shadowColor: COLORS.neonPink,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowRadius: 24,
-                    elevation: 12,
-                  },
-                  animatedGlowStyle,
-                ]}
-              >
-                <Pressable
-                  onPress={handleStartGenerating}
-                  className="py-5 rounded-2xl flex-row items-center justify-center active:opacity-90"
-                  style={{
-                    backgroundColor: COLORS.neonPink,
-                  }}
-                >
-                  <Sparkles size={22} color="#FFFFFF" />
-                  <Text className="text-white font-bold text-lg ml-2">
-                    Generate My Reply Now
-                  </Text>
-                </Pressable>
-              </Animated.View>
-
-              {/* Edit Persona Link */}
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   router.push('/my-vibe');
                 }}
-                className="mt-5 flex-row items-center justify-center active:opacity-70"
+                className="flex-row items-center justify-center active:opacity-70"
               >
                 <Text className="text-white/50 text-sm">
                   Set up your profile
