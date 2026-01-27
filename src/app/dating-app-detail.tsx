@@ -43,6 +43,11 @@ export default function DatingAppDetailScreen() {
     await setDatingAppProfile(appId, fields);
   };
 
+  const handleSaveSuccess = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    router.back();
+  };
+
   const handleDatingAppProfileDelete = async (appId: DatingAppId) => {
     await deleteDatingAppProfile(appId);
   };
@@ -87,6 +92,7 @@ export default function DatingAppDetailScreen() {
                   autoExpandAppId={appId}
                   hideHeader={false}
                   singleAppMode={true}
+                  onSaveSuccess={handleSaveSuccess}
                 />
               )}
             </Animated.View>

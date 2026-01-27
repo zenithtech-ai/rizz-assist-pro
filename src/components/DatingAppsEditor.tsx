@@ -9,6 +9,7 @@ import {
   Modal,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import * as Clipboard from 'expo-clipboard';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { COLORS } from '@/lib/constants';
 import {
@@ -18,7 +19,7 @@ import {
   APP_BEST_PRACTICES,
 } from '@/lib/datingAppsKnowledge';
 import { optimizeProfile, getFieldCharacterLimit } from '@/lib/profileOptimizer';
-import { Sparkles, Check, AlertCircle, ChevronUp, ChevronDown, Trash2 } from 'lucide-react-native';
+import { Sparkles, Check, AlertCircle, ChevronUp, ChevronDown, Trash2, Copy } from 'lucide-react-native';
 
 interface DatingAppsEditorProps {
   onProfileSave: (appId: DatingAppId, fields: Record<string, string>) => Promise<void>;
@@ -28,6 +29,7 @@ interface DatingAppsEditorProps {
   autoExpandAppId?: DatingAppId | null;
   hideHeader?: boolean;
   singleAppMode?: boolean;
+  onSaveSuccess?: () => void;
 }
 
 interface AppEditState {
@@ -38,12 +40,13 @@ interface AppEditState {
   isSaving: boolean;
 }
 
-export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles, aboutMe, autoExpandAppId, hideHeader, singleAppMode }: DatingAppsEditorProps) {
+export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles, aboutMe, autoExpandAppId, hideHeader, singleAppMode, onSaveSuccess }: DatingAppsEditorProps) {
   const [expandedApps, setExpandedApps] = useState<Set<DatingAppId>>(
     autoExpandAppId && !singleAppMode ? new Set([autoExpandAppId]) : (singleAppMode && autoExpandAppId ? new Set([autoExpandAppId]) : new Set())
   );
   const [appStates, setAppStates] = useState<Partial<Record<DatingAppId, AppEditState>>>({});
   const [deleteConfirmAppId, setDeleteConfirmAppId] = useState<DatingAppId | null>(null);
+  const [copiedFieldKey, setCopiedFieldKey] = useState<string | null>(null);
 
   // Initialize state for auto-expanded app
   useEffect(() => {
@@ -111,6 +114,14 @@ export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles
     }));
   };
 
+  const handleCopyField = async (fieldKey: string, value: string) => {
+    if (!value.trim()) return;
+    await Clipboard.setStringAsync(value);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setCopiedFieldKey(fieldKey);
+    setTimeout(() => setCopiedFieldKey(null), 1500);
+  };
+
   const handleOptimize = async (appId: DatingAppId) => {
     const state = appStates[appId];
     if (!state) return;
@@ -175,6 +186,11 @@ export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles
         const newExpanded = new Set(expandedApps);
         newExpanded.delete(appId);
         setExpandedApps(newExpanded);
+      } else {
+        // In single app mode, call the success callback to navigate back
+        if (onSaveSuccess) {
+          onSaveSuccess();
+        }
       }
 
       // Reset optimization state
@@ -311,18 +327,33 @@ export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles
                   const value = state.fieldValues[field.key] || '';
                   const limit = appConfig.characterLimits[field.key];
                   const percentage = Math.round((value.length / limit) * 100);
+                  const isCopied = copiedFieldKey === field.key;
 
                   return (
                     <View key={field.key} className="mb-4">
                       <View className="flex-row items-center justify-between mb-2">
                         <Text className="text-white font-semibold text-sm">{field.label}</Text>
-                        <Text
-                          className={`text-xs ${
-                            percentage > 90 ? 'text-red-400' : 'text-white/60'
-                          }`}
-                        >
-                          {value.length}/{limit}
-                        </Text>
+                        <View className="flex-row items-center">
+                          <Text
+                            className={`text-xs mr-2 ${
+                              percentage > 90 ? 'text-red-400' : 'text-white/60'
+                            }`}
+                          >
+                            {value.length}/{limit}
+                          </Text>
+                          {value.trim().length > 0 && (
+                            <Pressable
+                              onPress={() => handleCopyField(field.key, value)}
+                              className="active:opacity-70 p-1"
+                            >
+                              {isCopied ? (
+                                <Check size={16} color={COLORS.neonPink} />
+                              ) : (
+                                <Copy size={16} color="rgba(255, 255, 255, 0.5)" />
+                              )}
+                            </Pressable>
+                          )}
+                        </View>
                       </View>
 
                       <View
