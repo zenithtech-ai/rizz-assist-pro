@@ -173,7 +173,7 @@ export function AccountScreen() {
             <Animated.View entering={FadeInDown.delay(300).duration(400)} className="mt-6">
               <View className="flex-row items-center mb-4">
                 <ExternalLink size={22} color={COLORS.neonPink} />
-                <Text className="text-white font-bold text-lg ml-2">Dating App Profiles</Text>
+                <Text className="text-white font-bold text-lg ml-2">Your Dating App Profile Analyzer</Text>
               </View>
 
               <View className="flex-row flex-wrap">
