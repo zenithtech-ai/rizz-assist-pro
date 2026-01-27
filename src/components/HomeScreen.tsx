@@ -92,18 +92,6 @@ export default function HomeScreen() {
               </Pressable>
             </Animated.View>
 
-            {/* Secondary Link */}
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push('/my-vibe');
-              }}
-              className="items-center justify-center active:opacity-70 py-4 mt-4"
-            >
-              <Text className="text-white/50 text-sm">
-                Set up your profile
-              </Text>
-            </Pressable>
           </View>
 
           {/* Trust/Social Proof Footer */}
