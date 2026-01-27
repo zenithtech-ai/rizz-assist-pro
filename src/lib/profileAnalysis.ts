@@ -135,7 +135,8 @@ Be specific and based only on what you see in the profile. Make the suggestions 
 }
 
 export async function generateProfileOpeners(
-  analysis: AnalysisResult
+  analysis: AnalysisResult,
+  aboutMe: string = ''
 ): Promise<OpenersResult> {
   if (!OPENAI_API_KEY) {
     return {
@@ -154,12 +155,18 @@ Based on this dating profile analysis:
 - Conversation Style: ${analysis.conversationStyle}
 - Suggested Approach: ${analysis.suggestedApproach}
 
+${aboutMe ? `About YOU (the person sending the message):
+${aboutMe}
+
+Tailor openers to show compatibility and common ground with their interests.` : ''}
+
 Generate 5 unique, personalized dating openers that:
 1. Are direct conversation starters about their actual interests/profile
 2. Show you read their profile, not generic questions
 3. Have personality - flirty, confident, or witty (never boring)
 4. Are short and punchy (1-2 sentences max)
 5. Actually reference something specific about them
+${aboutMe ? '6. Show common ground or compatibility when relevant' : ''}
 
 Examples of GOOD openers:
 - "ok but why does everyone pretend hiking is fun when you could just drink coffee on a couch"

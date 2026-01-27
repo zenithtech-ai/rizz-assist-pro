@@ -42,6 +42,7 @@ import {
 import { useTokenStore } from '@/lib/tokenStore';
 import { generateReplies as generateAIReplies } from '@/lib/openai';
 import { analyzeProfileScreenshots, generateProfileOpeners } from '@/lib/profileAnalysis';
+import { usePersonaStore } from '@/lib/personaStore';
 
 interface AnalysisResult {
   personality: string;
@@ -269,6 +270,9 @@ export function ProfileAnalysisScreen() {
   const consumeToken = useTokenStore((s) => s.useToken);
   const planType = useTokenStore((s) => s.planType);
 
+  // Get user's About Me from persona store
+  const aboutMe = usePersonaStore((s) => s.aboutMe);
+
   // Check if user has paid plan
   const isPaidUser = planType === 'silver' || planType === 'gold';
 
@@ -370,7 +374,7 @@ export function ProfileAnalysisScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      const openersResult = await generateProfileOpeners(analysisResult);
+      const openersResult = await generateProfileOpeners(analysisResult, aboutMe);
       if (openersResult.openers.length > 0) {
         setOpeners(openersResult.openers);
       } else {
@@ -413,7 +417,7 @@ export function ProfileAnalysisScreen() {
     }
 
     try {
-      const openersResult = await generateProfileOpeners(analysisResult);
+      const openersResult = await generateProfileOpeners(analysisResult, aboutMe);
       if (openersResult.openers.length > 0) {
         setOpeners(openersResult.openers);
       } else {
