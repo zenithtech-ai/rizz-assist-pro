@@ -128,7 +128,7 @@ export function AccountScreen() {
               ) : (
                 <View>
                   <Text className="text-white/60 text-sm leading-5 mb-4">
-                    Add your likes, dislikes, and quirks to get replies that sound 100% like you.
+                    Add your likes, dislikes, and quirks here. The more you share, the more your replies will sound exactly like you wrote them - sharp, real, and authentically you
                   </Text>
 
                   <Pressable
