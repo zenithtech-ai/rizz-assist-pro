@@ -69,6 +69,42 @@ src/
     └── cn.ts            # Tailwind class merger
 ```
 
+## Tone + Action System
+
+The app now has a powerful **Tone + Action Combination System** that works in both the Reply Generator and Profile Analyzer:
+
+### How It Works
+
+**Tones** define your overall vibe (single select):
+- Flirty, Seductive, Cheeky/Tease, Smooth Charmer, Witty Banter, Bold Direct, Mysterious Intrigue, Cute Wholesome, Thoughtful Deep, Adventurous Fun, Compliment
+
+**Actions** define what you want to accomplish (multi-select):
+- Roast (playfully criticize their message)
+- Ask Out (suggest plans/date)
+- Ask for Number (get their contact info)
+
+### Combined Effect
+
+When both tone and action are selected, the AI applies **BOTH simultaneously**:
+- Example: "Flirty + Ask Out" → Playful teasing while suggesting to hang out
+- Example: "Bold Direct + Get Number" → Straightforward, confident request for their number
+- Example: "Witty Banter + Roast" → Clever humor while making fun of them
+
+The system prompt explicitly instructs the AI to apply both the tone/vibe AND all selected action goals together.
+
+### Implementation Details
+
+- **Style Prompt Builder** (`src/lib/stylePromptBuilder.ts`): Maps tone+action combos to detailed AI instructions
+- **Tone Instructions**: Specific guidance on tone/voice (e.g., "Use playful, teasing, light vibe with suggestive language")
+- **Action Instructions**: Clear goals (e.g., "Explicitly suggest plans with a specific activity and timeframe")
+- **Combined Prompt**: Both TONE and ACTIONS are injected into the system prompt with explicit instruction to apply both
+- **User Feedback**: When actions are selected, the UI shows the combined style (e.g., "Flirty + Ask Out") as a badge
+
+### Where It's Used
+
+1. **Reply Generator Tab** - User selects tone + optional actions, then generates replies to a message
+2. **Profile Analyzer Tab** - After uploading profile screenshots, user can select tone + actions to customize opener generation
+
 ## AI Reply Generation
 
 The app uses **GPT-4o** to generate contextual, style-specific replies:
@@ -77,18 +113,20 @@ The app uses **GPT-4o** to generate contextual, style-specific replies:
 - **Fallback**: Local template-based generator (`src/lib/replyGenerator.ts`)
 - **Vision**: Screenshot analysis with GPT-4o vision
 
-### Persona System
+### Tone + Action Prompt Injection
 
 The AI system prompt now includes:
-- **User's Chosen Persona**: One of 9 pre-defined personas or custom text
-- **User's About Me**: Personal details to make replies more personalized
-- **Human Texting Rules**: Strict formatting rules to sound natural (contractions, fillers, emojis, etc.)
+- **Tone Instructions**: How to sound (vibe, voice, examples)
+- **Action Instructions**: What to accomplish (goals, requirements)
+- **User's About Me**: Personal details to make replies authentic (Silver & Gold only)
+- **Explicit Instruction**: "Apply BOTH the TONE and ALL selected ACTIONS together"
+- **Human Texting Rules**: Strict formatting rules to sound natural (contractions, fillers, no emojis, etc.)
 
 ### Prompt Caching
 
 The system prompt is structured for OpenAI prompt caching:
-- Fixed prefix (persona descriptions, texting rules) - cacheable
-- Dynamic suffix (user's persona, about me) - injected per request
+- Fixed prefix (texting rules, base instructions) - cacheable
+- Dynamic suffix (tone instructions, action instructions, about me) - injected per request
 
 ## Persona Presets
 

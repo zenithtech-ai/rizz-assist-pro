@@ -50,6 +50,7 @@ import {
 } from '@/lib/constants';
 import { generateReplies as generateLocalReplies, ResponseLength } from '@/lib/replyGenerator';
 import { generateReplies as generateAIReplies } from '@/lib/openai';
+import { buildStyleSystemPromptSection, getStyleSummary } from '@/lib/stylePromptBuilder';
 
 // Tone button component
 function ToneButton({
@@ -237,6 +238,11 @@ export default function ReplyGeneratorPage() {
     return style;
   };
 
+  // Get detailed style instructions from tone + actions
+  const getDetailedStyleInstructions = (): string => {
+    return buildStyleSystemPromptSection(selectedTone, selectedActions, isPaidUser && aboutMe?.trim() ? aboutMe : '');
+  };
+
   const handleGenerate = async () => {
     // Need either text or screenshot
     if (!message.trim() && !screenshotBase64) {
@@ -263,16 +269,20 @@ export default function ReplyGeneratorPage() {
     // Try AI generation first, fall back to local if it fails
     try {
       const styleString = buildStyleString();
+      const styleInstructions = getDetailedStyleInstructions();
+
       console.log('Generating replies with:', {
         hasText: !!message.trim(),
         hasImage: !!screenshotBase64,
         style: styleString,
+        hasStyleInstructions: !!styleInstructions,
       });
 
       const result = await generateAIReplies({
         conversationText: message.trim() || undefined,
         imageBase64: screenshotBase64 || undefined,
         style: styleString,
+        styleInstructions,
         count: 3,
         userPersona: styleString,
         userAboutMe: isPaidUser && aboutMe?.trim() ? aboutMe : '',
@@ -506,9 +516,21 @@ export default function ReplyGeneratorPage() {
               <Text className="text-white/50 text-xs mb-2 ml-1">
                 Choose your tone and action
               </Text>
-              <Text className="text-white font-bold text-lg mb-3">
-                Choose Your Tone
-              </Text>
+              <View className="mb-3 flex-row items-center justify-between">
+                <Text className="text-white font-bold text-lg">
+                  Choose Your Tone
+                </Text>
+                {(selectedActions.length > 0) && (
+                  <View
+                    className="px-3 py-1 rounded-full"
+                    style={{ backgroundColor: 'rgba(255, 105, 180, 0.2)' }}
+                  >
+                    <Text className="text-white/70 text-xs font-semibold">
+                      {getStyleSummary(selectedTone, selectedActions)}
+                    </Text>
+                  </View>
+                )}
+              </View>
               <View className="flex-row flex-wrap">
                 {TONE_OPTIONS.map((tone) => (
                   <ToneButton

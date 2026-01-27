@@ -43,6 +43,7 @@ import { useTokenStore } from '@/lib/tokenStore';
 import { generateReplies as generateAIReplies } from '@/lib/openai';
 import { analyzeProfileScreenshots, generateProfileOpeners } from '@/lib/profileAnalysis';
 import { usePersonaStore } from '@/lib/personaStore';
+import { buildStyleSystemPromptSection, getStyleSummary } from '@/lib/stylePromptBuilder';
 
 interface AnalysisResult {
   personality: string;
@@ -406,18 +407,15 @@ export function ProfileAnalysisScreen() {
     setIsGeneratingOpeners(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Build style string
-    const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
-    let style = tone?.label || 'Flirty';
-    if (selectedActions.length > 0) {
-      const actionLabels = selectedActions.map(a =>
-        ACTION_OPTIONS.find(opt => opt.id === a)?.label || ''
-      ).filter(Boolean);
-      style += ' + ' + actionLabels.join(', ');
-    }
+    // Build detailed style instructions
+    const styleInstructions = buildStyleSystemPromptSection(
+      selectedTone,
+      selectedActions,
+      isPaidUser && aboutMe?.trim() ? aboutMe : ''
+    );
 
     try {
-      const openersResult = await generateProfileOpeners(analysisResult, aboutMe);
+      const openersResult = await generateProfileOpeners(analysisResult, isPaidUser && aboutMe?.trim() ? aboutMe : '', styleInstructions);
       if (openersResult.openers.length > 0) {
         setOpeners(openersResult.openers);
       } else {
@@ -718,7 +716,19 @@ export function ProfileAnalysisScreen() {
                 {showToneSelector && (
                   <Animated.View entering={FadeIn.duration(300)} className="mb-4">
                     {/* Tone Selection */}
-                    <Text className="text-white font-bold text-base mb-3">Choose Your Tone</Text>
+                    <View className="flex-row items-center justify-between mb-3">
+                      <Text className="text-white font-bold text-base">Choose Your Tone</Text>
+                      {(selectedActions.length > 0) && (
+                        <View
+                          className="px-3 py-1 rounded-full"
+                          style={{ backgroundColor: 'rgba(255, 105, 180, 0.2)' }}
+                        >
+                          <Text className="text-white/70 text-xs font-semibold">
+                            {getStyleSummary(selectedTone, selectedActions)}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                     <View className="flex-row flex-wrap mb-4">
                       {TONE_OPTIONS.map((tone) => (
                         <ToneButton

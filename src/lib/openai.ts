@@ -8,6 +8,7 @@ export interface GenerateRepliesParams {
   conversationText?: string;
   imageBase64?: string;
   style: string;
+  styleInstructions?: string; // Detailed tone + action instructions
   count?: number;
   userPersona?: string;
   userAboutMe?: string;
@@ -25,8 +26,8 @@ const CACHED_SYSTEM_PROMPT_PREFIX = `You are a real, confident guy texting a gir
 
 Output ONLY the raw message text they would copy-paste and send — no explanations, no suggestions, no extra text, no formatting.`;
 
-function buildDynamicSystemPrompt(style: string, userAboutMe: string): string {
-  const aboutMeSection = userAboutMe.trim()
+function buildDynamicSystemPrompt(style: string, styleInstructions?: string, userAboutMe?: string): string {
+  const aboutMeSection = userAboutMe?.trim()
     ? `
 
 ABOUT YOU:
@@ -35,6 +36,12 @@ ${userAboutMe}
 Use these details to make replies feel more personal and authentic.`
     : '';
 
+  // If we have detailed style instructions, use those instead of just the style string
+  if (styleInstructions?.trim()) {
+    return `${CACHED_SYSTEM_PROMPT_PREFIX}${styleInstructions}${aboutMeSection}`;
+  }
+
+  // Fallback to simple style string (for backward compatibility)
   return `${CACHED_SYSTEM_PROMPT_PREFIX}
 
 TONE/STYLE FOR THIS REPLY:
@@ -73,6 +80,7 @@ export async function generateReplies({
   conversationText,
   imageBase64,
   style,
+  styleInstructions,
   count = 3,
   userPersona = 'Flirty',
   userAboutMe = '',
@@ -96,7 +104,7 @@ export async function generateReplies({
 
   try {
     // Build the system prompt with style and about me
-    const systemPrompt = buildDynamicSystemPrompt(style, userAboutMe);
+    const systemPrompt = buildDynamicSystemPrompt(style, styleInstructions, userAboutMe);
 
     let messages: Array<{
       role: string;
