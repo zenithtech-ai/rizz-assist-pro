@@ -81,7 +81,7 @@ src/
 
 ## Dating App Profile Optimizer (PRO Feature)
 
-The app includes a powerful **Dating App Profile Optimizer** that helps users optimize their profiles for 8 popular dating apps using AI-powered suggestions.
+The app includes a powerful **Dating App Profile Optimizer** that helps users optimize their profiles for 8 popular dating apps using AI-powered suggestions. Profiles are displayed as expandable cards that you can edit inline.
 
 ### Supported Dating Apps
 
@@ -96,14 +96,14 @@ The app includes a powerful **Dating App Profile Optimizer** that helps users op
 
 ### How It Works
 
-1. **Select App**: Choose which dating app to optimize
-2. **Enter Profile Text**: Fill in your current profile information
+1. **View Dating Apps**: All 8 apps shown as expandable cards in Personalization > My Profile
+2. **Expand & Edit**: Tap any app to expand and edit profile fields inline (✓ shows if saved)
 3. **Get AI Suggestions**: Click "Optimize" to receive:
    - App-specific improvement suggestions
    - Before/after comparisons
    - Explanation of why each change helps
-   - Character limit enforcement
-4. **Apply & Save**: Apply suggestions and save your optimized profile
+   - Character limit enforcement (visual warnings)
+4. **Apply & Save**: Apply suggestions directly to fields, then click Save to store profile locally
 
 ### AI Optimization Features
 
