@@ -15,7 +15,7 @@ import Animated, {
   FadeInUp,
 } from 'react-native-reanimated';
 import {
-  ChevronRight,
+  Sparkles,
 } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
@@ -73,41 +73,24 @@ export default function HomeScreen() {
               </Text>
             </Animated.View>
 
-            {/* Links Section */}
-            <View className="gap-3">
-              <Animated.View entering={FadeInUp.delay(500).duration(600)}>
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push({
-                      pathname: '/(tabs)/reply-generator',
-                    });
-                  }}
-                  className="px-6 py-3 flex-row items-center justify-center active:opacity-70 rounded-lg"
-                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                >
-                  <Text className="text-white/70 text-sm font-medium">
-                    Start generating replies now
+            {/* CTA Button */}
+            <Animated.View entering={FadeInUp.delay(500).duration(600)}>
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  router.navigate('reply-generator');
+                }}
+                className="py-4 px-8 rounded-2xl items-center justify-center active:opacity-80"
+                style={{ backgroundColor: COLORS.neonPink }}
+              >
+                <View className="flex-row items-center justify-center">
+                  <Sparkles size={20} color="#FFFFFF" />
+                  <Text className="text-white font-bold text-base ml-2">
+                    Generate Replies
                   </Text>
-                  <ChevronRight size={16} color="rgba(255, 255, 255, 0.5)" style={{ marginLeft: 6 }} />
-                </Pressable>
-              </Animated.View>
-              <Animated.View entering={FadeInUp.delay(550).duration(600)}>
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push('/my-vibe');
-                  }}
-                  className="px-6 py-3 flex-row items-center justify-center active:opacity-70 rounded-lg"
-                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-                >
-                  <Text className="text-white/70 text-sm font-medium">
-                    Set up your profile
-                  </Text>
-                  <ChevronRight size={16} color="rgba(255, 255, 255, 0.5)" style={{ marginLeft: 6 }} />
-                </Pressable>
-              </Animated.View>
-            </View>
+                </View>
+              </Pressable>
+            </Animated.View>
           </View>
 
           {/* Trust/Social Proof Footer */}
