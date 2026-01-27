@@ -1,6 +1,6 @@
 // Rizz Assist Pro - Settings Screen
 import React, { useState } from 'react';
-import { View, Text, Pressable, ScrollView, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ScrollView, Linking, ActivityIndicator, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -78,7 +78,13 @@ export function SettingsScreen() {
 
   const handleManageSubscription = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await Linking.openURL('https://apps.apple.com/account/subscriptions');
+
+    if (Platform.OS === 'ios') {
+      await Linking.openURL('https://apps.apple.com/account/subscriptions');
+    } else {
+      // Android - open Google Play Store app subscription management
+      await Linking.openURL('https://play.google.com/store/account/subscriptions');
+    }
   };
 
   const handleContactSupport = () => {
