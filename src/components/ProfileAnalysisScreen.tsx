@@ -314,13 +314,17 @@ export function ProfileAnalysisScreen() {
   };
 
   const handleAnalyze = async (images: string[]) => {
+    console.log('handleAnalyze called with', images.length, 'images');
     setIsAnalyzing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
+      console.log('Starting analysis...');
       const result = await analyzeProfileScreenshots(images);
+      console.log('Analysis result:', result);
 
       if (result.error) {
+        console.error('Analysis error:', result.error);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         setAnalysisResult({
           personality: 'Error analyzing profile',
@@ -330,14 +334,20 @@ export function ProfileAnalysisScreen() {
           error: result.error,
         });
       } else {
+        console.log('Analysis successful, setting result and generating openers');
         setAnalysisResult(result);
 
         // Auto-generate openers after successful analysis
         setIsGeneratingOpeners(true);
+        console.log('Generating openers...');
         const openersResult = await generateProfileOpeners(images, result);
+        console.log('Openers result:', openersResult);
 
         if (!openersResult.error && openersResult.openers.length > 0) {
+          console.log('Setting openers:', openersResult.openers);
           setOpeners(openersResult.openers);
+        } else {
+          console.log('No openers generated or error:', openersResult.error);
         }
         setIsGeneratingOpeners(false);
       }

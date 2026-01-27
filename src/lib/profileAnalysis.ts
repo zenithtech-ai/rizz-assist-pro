@@ -41,14 +41,18 @@ export async function analyzeProfileScreenshots(
   }
 
   try {
+    console.log('Starting profile analysis with', base64Images.length, 'images');
+
     // Build image content blocks for OpenAI
     const imageContent = base64Images.map(base64 => ({
       type: 'image_url' as const,
       image_url: {
         url: `data:image/jpeg;base64,${base64}`,
+        detail: 'low' as const, // Lower detail for faster processing
       },
     }));
 
+    console.log('Making OpenAI API request...');
     const response = await fetch(OPENAI_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -80,6 +84,8 @@ Be specific and based only on what you see in the profile. Make the suggestions 
         ],
       }),
     });
+
+    console.log('OpenAI API response received:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -147,11 +153,14 @@ export async function generateProfileOpeners(
   }
 
   try {
+    console.log('Generating openers with', base64Images.length, 'images');
+
     // Build image content blocks for OpenAI
     const imageContent = base64Images.map(base64 => ({
       type: 'image_url' as const,
       image_url: {
         url: `data:image/jpeg;base64,${base64}`,
+        detail: 'low' as const, // Lower detail for faster processing
       },
     }));
 
@@ -172,6 +181,7 @@ Generate 5 unique, personalized dating openers that:
 Format your response as a numbered list (1-5), one opener per line.
 Just the openers, no explanations.`;
 
+    console.log('Making OpenAI API request for openers...');
     const response = await fetch(OPENAI_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -195,6 +205,8 @@ Just the openers, no explanations.`;
         ],
       }),
     });
+
+    console.log('OpenAI API openers response received:', response.status);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
