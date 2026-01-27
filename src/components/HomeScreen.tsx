@@ -79,7 +79,7 @@ export default function HomeScreen() {
                 <Pressable
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push('/(tabs)/reply-generator');
+                    router.push('/reply-generator');
                   }}
                   className="px-6 py-3 flex-row items-center justify-center active:opacity-70 rounded-lg"
                   style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
