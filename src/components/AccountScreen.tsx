@@ -55,7 +55,7 @@ export function AccountScreen() {
         <View className="flex-row items-center justify-between px-5 py-3">
           <View className="flex-row items-center">
             <User size={22} color={COLORS.neonPink} />
-            <Text className="text-white font-bold text-xl ml-2">Account</Text>
+            <Text className="text-white font-bold text-xl ml-2">Personalization</Text>
           </View>
           <TokenCounter />
         </View>
