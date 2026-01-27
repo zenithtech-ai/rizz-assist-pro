@@ -223,7 +223,7 @@ export function AccountScreen() {
               </View>
 
               <Text className="text-white/50 text-xs mt-3 ml-1">
-                Tap any app to add or edit your profile
+                Tap any app to add, edit and enhance your profile
               </Text>
             </Animated.View>
           )}
