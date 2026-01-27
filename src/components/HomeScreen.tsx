@@ -74,32 +74,36 @@ export function HomeScreen() {
             </Animated.View>
 
             {/* Links Section */}
-            <Animated.View entering={FadeInUp.delay(500).duration(600)} className="gap-3">
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push('/(tabs)/reply-generator');
-                }}
-                className="flex-row items-center justify-center active:opacity-70"
-              >
-                <Text className="text-white/50 text-sm">
-                  Start generating replies now
-                </Text>
-                <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" />
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push('/my-vibe');
-                }}
-                className="flex-row items-center justify-center active:opacity-70"
-              >
-                <Text className="text-white/50 text-sm">
-                  Set up your profile
-                </Text>
-                <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" />
-              </Pressable>
-            </Animated.View>
+            <View className="gap-3">
+              <Animated.View entering={FadeInUp.delay(500).duration(600)}>
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push('/(tabs)/reply-generator');
+                  }}
+                  className="flex-row items-center justify-center active:opacity-70"
+                >
+                  <Text className="text-white/50 text-sm">
+                    Start generating replies now
+                  </Text>
+                  <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" />
+                </Pressable>
+              </Animated.View>
+              <Animated.View entering={FadeInUp.delay(550).duration(600)}>
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push('/my-vibe');
+                  }}
+                  className="flex-row items-center justify-center active:opacity-70"
+                >
+                  <Text className="text-white/50 text-sm">
+                    Set up your profile
+                  </Text>
+                  <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" />
+                </Pressable>
+              </Animated.View>
+            </View>
           </View>
 
           {/* Trust/Social Proof Footer */}
