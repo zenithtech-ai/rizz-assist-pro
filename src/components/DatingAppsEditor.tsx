@@ -138,7 +138,11 @@ export function DatingAppsEditor({ onProfileSave, savedProfiles, aboutMe }: Dati
     try {
       await onProfileSave(appId, state.fieldValues);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      // Keep expanded for user to see confirmation, but reset optimization state
+      // Collapse the app after successful save
+      const newExpanded = new Set(expandedApps);
+      newExpanded.delete(appId);
+      setExpandedApps(newExpanded);
+      // Reset optimization state
       setAppStates(prev => ({
         ...prev,
         [appId]: {
