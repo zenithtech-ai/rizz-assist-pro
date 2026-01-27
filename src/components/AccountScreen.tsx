@@ -115,7 +115,7 @@ export function AccountScreen() {
                   }}
                 >
                   <Zap size={20} color="#FFFFFF" />
-                  <Text className="text-white font-bold text-base ml-2">Upgrade to Pro</Text>
+                  <Text className="text-white font-bold text-base ml-2">Upgrade Now</Text>
                 </Pressable>
               )}
             </View>

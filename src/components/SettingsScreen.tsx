@@ -189,7 +189,7 @@ export function SettingsScreen() {
             )}
           </View>
 
-          {/* My Vibe & Profile */}
+          {/* My Profile */}
           <View className="mb-6">
             <Text className="text-white/50 text-xs font-medium uppercase mb-3 ml-1">
               Personalization
@@ -209,7 +209,7 @@ export function SettingsScreen() {
                   <Text className="text-xl">{currentPersona.emoji}</Text>
                 </View>
                 <View className="flex-1">
-                  <Text className="text-white font-bold">My Vibe & Profile</Text>
+                  <Text className="text-white font-bold">My Profile</Text>
                   <Text className="text-white/50 text-sm">{currentPersona.name}</Text>
                 </View>
               </View>
