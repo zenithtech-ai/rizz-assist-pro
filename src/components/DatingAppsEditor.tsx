@@ -18,10 +18,11 @@ import {
   APP_BEST_PRACTICES,
 } from '@/lib/datingAppsKnowledge';
 import { optimizeProfile, getFieldCharacterLimit } from '@/lib/profileOptimizer';
-import { Sparkles, Check, AlertCircle, ChevronUp, ChevronDown } from 'lucide-react-native';
+import { Sparkles, Check, AlertCircle, ChevronUp, ChevronDown, Trash2 } from 'lucide-react-native';
 
 interface DatingAppsEditorProps {
   onProfileSave: (appId: DatingAppId, fields: Record<string, string>) => Promise<void>;
+  onProfileDelete: (appId: DatingAppId) => Promise<void>;
   savedProfiles: Partial<Record<DatingAppId, { appId: DatingAppId; fieldValues: Record<string, string> }>>;
   aboutMe: string;
 }
@@ -34,9 +35,10 @@ interface AppEditState {
   isSaving: boolean;
 }
 
-export function DatingAppsEditor({ onProfileSave, savedProfiles, aboutMe }: DatingAppsEditorProps) {
+export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles, aboutMe }: DatingAppsEditorProps) {
   const [expandedApps, setExpandedApps] = useState<Set<DatingAppId>>(new Set());
   const [appStates, setAppStates] = useState<Partial<Record<DatingAppId, AppEditState>>>({});
+  const [deleteConfirmAppId, setDeleteConfirmAppId] = useState<DatingAppId | null>(null);
 
   const toggleApp = (appId: DatingAppId) => {
     const newExpanded = new Set(expandedApps);
@@ -160,6 +162,17 @@ export function DatingAppsEditor({ onProfileSave, savedProfiles, aboutMe }: Dati
         [appId]: { ...prev[appId]!, isSaving: false },
       }));
     }
+  };
+
+  const handleDelete = async (appId: DatingAppId) => {
+    await onProfileDelete(appId);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // Collapse the app after successful delete
+    const newExpanded = new Set(expandedApps);
+    newExpanded.delete(appId);
+    setExpandedApps(newExpanded);
+    // Clear the delete confirmation
+    setDeleteConfirmAppId(null);
   };
 
   return (
@@ -332,6 +345,20 @@ export function DatingAppsEditor({ onProfileSave, savedProfiles, aboutMe }: Dati
                       </>
                     )}
                   </Pressable>
+
+                  {hasSaved && (
+                    <Pressable
+                      onPress={() => setDeleteConfirmAppId(app.id)}
+                      className="py-3 px-3 rounded-lg active:opacity-80"
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1.5,
+                        borderColor: 'rgba(255, 100, 100, 0.6)',
+                      }}
+                    >
+                      <Trash2 size={18} color="rgba(255, 100, 100, 0.8)" />
+                    </Pressable>
+                  )}
                 </View>
 
                 {/* Optimization Results Modal */}
@@ -454,6 +481,60 @@ export function DatingAppsEditor({ onProfileSave, savedProfiles, aboutMe }: Dati
                     </View>
                   </View>
                 </Modal>
+
+                {/* Delete Confirmation Modal */}
+                <Modal
+                  visible={deleteConfirmAppId === app.id}
+                  transparent={true}
+                  animationType="fade"
+                >
+                  <View
+                    className="flex-1 items-center justify-center"
+                    style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+                  >
+                    <View
+                      className="rounded-2xl p-6 mx-6"
+                      style={{ backgroundColor: '#1A0D2E', minWidth: '80%' }}
+                    >
+                      <Text className="text-white font-bold text-lg mb-4">
+                        Delete Profile?
+                      </Text>
+
+                      <Text className="text-white/70 text-sm mb-6">
+                        Are you sure you want to delete all text in your {app.label} profile? This action cannot be undone.
+                      </Text>
+
+                      <View className="flex-row gap-3">
+                        <Pressable
+                          onPress={() => setDeleteConfirmAppId(null)}
+                          className="flex-1 py-3 rounded-lg active:opacity-80"
+                          style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1.5,
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                          }}
+                        >
+                          <Text className="text-white font-semibold text-center">
+                            Cancel
+                          </Text>
+                        </Pressable>
+
+                        <Pressable
+                          onPress={() => handleDelete(app.id)}
+                          className="flex-1 py-3 rounded-lg active:opacity-80 flex-row items-center justify-center"
+                          style={{
+                            backgroundColor: 'rgba(255, 100, 100, 0.7)',
+                          }}
+                        >
+                          <Trash2 size={18} color="#FFF" />
+                          <Text className="text-white font-bold ml-2">
+                            Delete
+                          </Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
               </View>
             )}
           </Animated.View>
@@ -462,3 +543,4 @@ export function DatingAppsEditor({ onProfileSave, savedProfiles, aboutMe }: Dati
     </View>
   );
 }
+

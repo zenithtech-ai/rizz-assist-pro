@@ -104,6 +104,7 @@ The app includes a powerful **Dating App Profile Optimizer** that helps users op
    - Explanation of why each change helps
    - Character limit enforcement (visual warnings)
 4. **Apply & Save**: Apply suggestions directly to fields, then click Save to store profile locally
+5. **Delete Profile**: For saved profiles, click the delete button (trash icon) to clear all text in that profile
 
 ### AI Optimization Features
 

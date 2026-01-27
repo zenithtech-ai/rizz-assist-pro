@@ -112,6 +112,7 @@ interface PersonaState {
   setDatingAppProfile: (appId: DatingAppId, fieldValues: Record<string, string>) => Promise<void>;
   getDatingAppProfile: (appId: DatingAppId) => DatingAppProfile | undefined;
   loadDatingAppProfiles: () => Promise<void>;
+  deleteDatingAppProfile: (appId: DatingAppId) => Promise<void>;
 }
 
 export const usePersonaStore = create<PersonaState>((set, get) => ({
@@ -206,6 +207,22 @@ export const usePersonaStore = create<PersonaState>((set, get) => ({
     } catch (error) {
       console.error('Error loading dating app profiles:', error);
     }
+  },
+
+  deleteDatingAppProfile: async (appId: DatingAppId) => {
+    set((state) => {
+      const { [appId]: _, ...remaining } = state.datingAppProfiles;
+      return {
+        datingAppProfiles: remaining,
+      };
+    });
+
+    // Save to storage
+    const state = get();
+    await AsyncStorage.setItem(
+      STORAGE_KEYS.DATING_APP_PROFILES,
+      JSON.stringify(state.datingAppProfiles)
+    );
   },
 
   getActivePersonaDescription: () => {

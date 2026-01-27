@@ -32,6 +32,7 @@ export function MyVibeScreen() {
   const isLoaded = usePersonaStore((s) => s.isLoaded);
   const datingAppProfiles = usePersonaStore((s) => s.datingAppProfiles);
   const setDatingAppProfile = usePersonaStore((s) => s.setDatingAppProfile);
+  const deleteDatingAppProfile = usePersonaStore((s) => s.deleteDatingAppProfile);
 
   // Check if user has a paid plan (silver or gold)
   const planType = useTokenStore((s) => s.planType);
@@ -64,6 +65,10 @@ export function MyVibeScreen() {
 
   const handleDatingAppProfileSave = async (appId: DatingAppId, fields: Record<string, string>) => {
     await setDatingAppProfile(appId, fields);
+  };
+
+  const handleDatingAppProfileDelete = async (appId: DatingAppId) => {
+    await deleteDatingAppProfile(appId);
   };
 
   const hasChanges = aboutMe !== savedAboutMe;
@@ -103,6 +108,7 @@ export function MyVibeScreen() {
               <Animated.View entering={FadeInDown.duration(300)} className="mb-8">
                 <DatingAppsEditor
                   onProfileSave={handleDatingAppProfileSave}
+                  onProfileDelete={handleDatingAppProfileDelete}
                   savedProfiles={datingAppProfiles}
                   aboutMe={aboutMe}
                 />
