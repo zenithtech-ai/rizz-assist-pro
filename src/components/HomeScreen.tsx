@@ -93,19 +93,17 @@ export default function HomeScreen() {
             </Animated.View>
 
             {/* Secondary Link */}
-            <Animated.View entering={FadeInUp.delay(550).duration(600)} className="mt-4" style={{ width: '100%' }}>
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push('/my-vibe');
-                }}
-                className="items-center justify-center active:opacity-70 py-4"
-              >
-                <Text className="text-white/50 text-sm">
-                  Set up your profile
-                </Text>
-              </Pressable>
-            </Animated.View>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/my-vibe');
+              }}
+              className="items-center justify-center active:opacity-70 py-4 mt-4"
+            >
+              <Text className="text-white/50 text-sm">
+                Set up your profile
+              </Text>
+            </Pressable>
           </View>
 
           {/* Trust/Social Proof Footer */}
