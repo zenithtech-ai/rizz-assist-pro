@@ -14,6 +14,7 @@ import {
   Camera,
   CameraOff,
   Zap,
+  Pencil,
 } from 'lucide-react-native';
 
 import { CollapsibleSection } from '@/components/CollapsibleSection';
@@ -206,11 +207,11 @@ export function SettingsScreen() {
                   className="w-10 h-10 rounded-full items-center justify-center mr-3"
                   style={{ backgroundColor: 'rgba(255, 105, 180, 0.2)' }}
                 >
-                  <Text className="text-xl">{currentPersona.emoji}</Text>
+                  <Pencil size={20} color={COLORS.neonPink} />
                 </View>
                 <View className="flex-1">
                   <Text className="text-white font-bold">My Profile</Text>
-                  <Text className="text-white/50 text-sm">{currentPersona.name}</Text>
+                  <Text className="text-white/50 text-sm">Update your preferences</Text>
                 </View>
               </View>
               <Sparkles size={20} color={COLORS.neonPink} />

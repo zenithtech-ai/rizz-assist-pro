@@ -40,6 +40,7 @@ import {
 import { TokenCounter } from '@/components/TokenCounter';
 import { ReplyBubble } from '@/components/ReplyBubble';
 import { useTokenStore } from '@/lib/tokenStore';
+import { usePersonaStore } from '@/lib/personaStore';
 import {
   COLORS,
   TONE_OPTIONS,
@@ -190,6 +191,9 @@ export function HomeScreen() {
   const consumeToken = useTokenStore((s) => s.useToken);
   const totalUses = useTokenStore((s) => s.totalUses);
 
+  // Get About Me from persona store
+  const aboutMe = usePersonaStore((s) => s.aboutMe);
+
   // Screenshot is only available for paid users
   const screenshotEnabled = planType !== 'free';
 
@@ -275,7 +279,7 @@ export function HomeScreen() {
         style: styleString,
         count: 3,
         userPersona: styleString,
-        userAboutMe: '',
+        userAboutMe: isPaidUser && aboutMe?.trim() ? aboutMe : '',
       });
 
       console.log('AI result:', {
