@@ -12,6 +12,11 @@ export interface AnalysisResult {
   error?: string;
 }
 
+export interface OpenersResult {
+  openers: string[];
+  error?: string;
+}
+
 export async function analyzeProfileScreenshots(
   base64Images: string[]
 ): Promise<AnalysisResult> {
@@ -118,6 +123,115 @@ Be specific and based only on what you see in the profile. Make the suggestions 
       interests: [],
       conversationStyle: '',
       suggestedApproach: '',
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+
+export async function generateProfileOpeners(
+  base64Images: string[],
+  analysis: AnalysisResult
+): Promise<OpenersResult> {
+  if (!OPENAI_API_KEY) {
+    return {
+      openers: [],
+      error: 'OpenAI API key not configured',
+    };
+  }
+
+  if (base64Images.length === 0) {
+    return {
+      openers: [],
+      error: 'No images provided',
+    };
+  }
+
+  try {
+    // Build image content blocks for OpenAI
+    const imageContent = base64Images.map(base64 => ({
+      type: 'image_url' as const,
+      image_url: {
+        url: `data:image/jpeg;base64,${base64}`,
+      },
+    }));
+
+    const analysisContext = `
+Based on this dating profile analysis:
+- Personality: ${analysis.personality}
+- Interests: ${analysis.interests.join(', ')}
+- Conversation Style: ${analysis.conversationStyle}
+- Suggested Approach: ${analysis.suggestedApproach}
+
+Generate 5 unique, personalized dating openers that:
+1. Reference specific details from the profile photos
+2. Match their conversation style
+3. Sound natural and genuine (never robotic)
+4. Are short, punchy, and memorable
+5. Show you actually looked at their profile
+
+Format your response as a numbered list (1-5), one opener per line.
+Just the openers, no explanations.`;
+
+    const response = await fetch(OPENAI_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        max_tokens: 800,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              ...imageContent,
+              {
+                type: 'text',
+                text: analysisContext,
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('OpenAI API error:', errorData);
+      return {
+        openers: [],
+        error: `API request failed: ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    // Parse numbered list format
+    const openers = content
+      .split('\n')
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0)
+      .map((line: string) => {
+        // Remove numbering like "1.", "1)", "- ", etc
+        return line.replace(/^[\d]+[.)\-]\s*/, '').replace(/^[-•]\s*/, '').trim();
+      })
+      .filter((line: string) => line.length > 0)
+      .slice(0, 5);
+
+    if (openers.length === 0) {
+      return {
+        openers: [],
+        error: 'No openers generated',
+      };
+    }
+
+    return { openers };
+  } catch (error) {
+    console.error('Error generating openers:', error);
+    return {
+      openers: [],
       error: error instanceof Error ? error.message : 'Unknown error occurred',
     };
   }

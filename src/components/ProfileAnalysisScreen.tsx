@@ -41,7 +41,7 @@ import {
 } from '@/lib/constants';
 import { useTokenStore } from '@/lib/tokenStore';
 import { generateReplies as generateAIReplies } from '@/lib/openai';
-import { analyzeProfileScreenshots } from '@/lib/profileAnalysis';
+import { analyzeProfileScreenshots, generateProfileOpeners } from '@/lib/profileAnalysis';
 
 interface AnalysisResult {
   personality: string;
@@ -49,17 +49,6 @@ interface AnalysisResult {
   conversationStyle: string;
   suggestedApproach: string;
   error?: string;
-}
-
-// Mock openers based on analysis
-function generateAnalysisOpeners(): string[] {
-  return [
-    "okay I have to ask... was that hiking pic taken at sunrise or are you just that dedicated to golden hour 😏",
-    "your profile gives off main character energy and honestly? respect",
-    "I noticed you're into live music - what's the last show that made you forget your phone existed?",
-    "the travel pics are cool but I need to know... are you a window seat or aisle person? this matters",
-    "something tells me you have strong opinions about coffee. am I right?",
-  ];
 }
 
 // Tone button component (reused from HomeScreen)
@@ -342,6 +331,15 @@ export function ProfileAnalysisScreen() {
         });
       } else {
         setAnalysisResult(result);
+
+        // Auto-generate openers after successful analysis
+        setIsGeneratingOpeners(true);
+        const openersResult = await generateProfileOpeners(images, result);
+
+        if (!openersResult.error && openersResult.openers.length > 0) {
+          setOpeners(openersResult.openers);
+        }
+        setIsGeneratingOpeners(false);
       }
     } catch (error) {
       console.error('Analysis error:', error);
@@ -364,24 +362,41 @@ export function ProfileAnalysisScreen() {
       return;
     }
 
+    if (!analysisResult || uploadedImages.length === 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      return;
+    }
+
     const success = consumeToken();
     if (!success) return;
 
     setIsGeneratingOpeners(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Simulate generation delay (replace with actual AI call)
-    await new Promise(resolve => setTimeout(resolve, 1200));
-
-    const generatedOpeners = generateAnalysisOpeners();
-    setOpeners(generatedOpeners);
-    setIsGeneratingOpeners(false);
+    try {
+      const openersResult = await generateProfileOpeners(uploadedImages, analysisResult);
+      if (openersResult.openers.length > 0) {
+        setOpeners(openersResult.openers);
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } catch (error) {
+      console.error('Error generating openers:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsGeneratingOpeners(false);
+    }
   };
 
   const handleGenerateWithTone = async () => {
     if (tokens <= 0) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       router.push('/paywall');
+      return;
+    }
+
+    if (!analysisResult || uploadedImages.length === 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       return;
     }
 
@@ -401,13 +416,20 @@ export function ProfileAnalysisScreen() {
       style += ' + ' + actionLabels.join(', ');
     }
 
-    // Simulate generation delay (replace with actual AI call)
-    await new Promise(resolve => setTimeout(resolve, 1200));
-
-    const generatedOpeners = generateAnalysisOpeners();
-    setOpeners(generatedOpeners);
-    setIsGeneratingOpeners(false);
-    setShowToneSelector(false);
+    try {
+      const openersResult = await generateProfileOpeners(uploadedImages, analysisResult);
+      if (openersResult.openers.length > 0) {
+        setOpeners(openersResult.openers);
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } catch (error) {
+      console.error('Error generating openers:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } finally {
+      setIsGeneratingOpeners(false);
+      setShowToneSelector(false);
+    }
   };
 
   const handleClearImages = () => {
