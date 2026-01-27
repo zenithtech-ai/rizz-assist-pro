@@ -348,6 +348,8 @@ export default function ReplyGeneratorPage() {
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
         if (asset.base64) {
+          // Clear previous replies when uploading new screenshot
+          setGeneratedReplies([]);
           setScreenshotBase64(asset.base64);
           setHasScreenshot(true);
           console.log('Screenshot uploaded with base64, length:', asset.base64.length);
