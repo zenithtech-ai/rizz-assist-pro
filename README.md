@@ -6,16 +6,22 @@ AI-powered dating assistant app that generates contextual reply suggestions base
 
 - **11 Tone Options**: Flirty, Seductive, Cheeky/Tease, Smooth Charmer, Witty Banter, Bold Direct, Mysterious Intrigue, Cute Wholesome, Thoughtful Deep, Adventurous Fun, Compliment
 - **3 Action Intents**: Roast, Ask Out, Ask for Number (can be combined with any tone)
+- **Tone + Action Combinations**: Select both tone and action to generate replies that embody the tone while achieving the action goals
 - **9 Persona Presets**: Cheeky Tease, Smooth Charmer, Witty Banter, Bold Direct, Mysterious Intrigue, Cute Wholesome, Edgy Sarcastic, Thoughtful Deep, Adventurous Fun
 - **Custom Persona**: Define your own personality/style
 - **About Me Profile**: Add personal details (likes, dislikes, quirks) for more personalized replies (Silver & Gold only)
+- **Dating App Profile Optimizer** (PRO): Optimize profiles for 8 popular dating apps with AI-powered suggestions:
+  - Tinder, Bumble, Hinge, Facebook Dating, Match, eHarmony, OkCupid, Instagram
+  - App-specific best practices and character limits
+  - AI-generated improvement suggestions
+  - Optimized profiles with tips for each app
 - **Profile Analysis**: Upload dating profile screenshots to analyze and generate tailored openers
 - **Screenshot Analysis**: Upload conversation screenshots for AI to read and respond to (Silver & Gold only)
 - **Token System**: Free users get 3 replies/day, Silver gets 1,500/month, Gold gets 3,000/month
 - **Subscription Plans**:
-  - Free: 3 replies/day, no screenshot analysis
-  - Silver: $9.95/month, 1,500 replies/month, screenshot analysis enabled
-  - Gold: $17.95/month, 3,000 replies/month, screenshot analysis enabled
+  - Free: 3 replies/day, no screenshot analysis, no dating app profiles
+  - Silver: $9.95/month, 1,500 replies/month, screenshot analysis + dating app profiles
+  - Gold: $17.95/month, 3,000 replies/month, screenshot analysis + dating app profiles
 - **Dark Mode**: Beautiful purple-to-pink gradient design
 
 ## App Flow
@@ -54,20 +60,71 @@ src/
 │   ├── ProfileAnalysisScreen.tsx
 │   ├── AccountScreen.tsx
 │   ├── SettingsScreen.tsx
-│   ├── MyVibeScreen.tsx        # Persona & profile editor
+│   ├── MyVibeScreen.tsx        # Persona & profile editor + dating app profiles
+│   ├── DatingAppsEditor.tsx    # Dating apps profile selector & editor
 │   ├── TokenCounter.tsx
 │   ├── StyleButton.tsx
 │   ├── ReplyBubble.tsx
 │   └── CollapsibleSection.tsx
 └── lib/
-    ├── constants.ts     # Colors, tone options, action options, legal text
-    ├── knowledgeBase.ts # AI knowledge base for reply generation
-    ├── openai.ts        # OpenAI GPT-4o API integration with persona injection
-    ├── replyGenerator.ts # Local fallback reply generator
-    ├── tokenStore.ts    # Zustand store for tokens/subscription
-    ├── personaStore.ts  # Zustand store for personas and about me
-    └── cn.ts            # Tailwind class merger
+    ├── constants.ts                # Colors, tone options, action options, legal text
+    ├── datingAppsKnowledge.ts      # Dating apps profiles, fields, best practices
+    ├── profileOptimizer.ts         # AI profile optimizer using OpenAI
+    ├── knowledgeBase.ts            # AI knowledge base for reply generation
+    ├── openai.ts                   # OpenAI GPT-4o API integration with persona injection
+    ├── replyGenerator.ts           # Local fallback reply generator
+    ├── stylePromptBuilder.ts       # Tone + action instruction builder
+    ├── tokenStore.ts               # Zustand store for tokens/subscription
+    ├── personaStore.ts             # Zustand store for personas, about me, dating app profiles
+    └── cn.ts                       # Tailwind class merger
 ```
+
+## Dating App Profile Optimizer (PRO Feature)
+
+The app includes a powerful **Dating App Profile Optimizer** that helps users optimize their profiles for 8 popular dating apps using AI-powered suggestions.
+
+### Supported Dating Apps
+
+1. **Tinder** - Short, punchy, witty bios with personality
+2. **Bumble** - Confident headline + full bio + first date idea
+3. **Hinge** - Detailed prompts about yourself + date ideas
+4. **Facebook Dating** - About section + lifestyle info
+5. **Match** - Comprehensive about me + what you're looking for
+6. **eHarmony** - Essay-style profiles focused on values
+7. **OkCupid** - Detailed sections with personality + interests
+8. **Instagram** - Ultra-short bio optimized for discovery
+
+### How It Works
+
+1. **Select App**: Choose which dating app to optimize
+2. **Enter Profile Text**: Fill in your current profile information
+3. **Get AI Suggestions**: Click "Optimize" to receive:
+   - App-specific improvement suggestions
+   - Before/after comparisons
+   - Explanation of why each change helps
+   - Character limit enforcement
+4. **Apply & Save**: Apply suggestions and save your optimized profile
+
+### AI Optimization Features
+
+- **App-Specific Best Practices**: Each app has research-backed dos and don'ts
+- **Character Limit Enforcement**: Respects maximum character counts per field
+- **Improvement Suggestions**: 2-3 targeted suggestions with reasoning
+- **Personalization**: Uses your "About Me" to make suggestions personal
+- **Specific Tips**: App-specific writing style guidance
+
+### Best Practices Knowledge Base
+
+The optimizer is trained on best practices for each app:
+
+**Tinder**: Keep it under 150 chars, lead with personality, include conversation hooks
+**Bumble**: Strong headline (40 chars), specific first date idea, warm tone
+**Hinge**: Specific details, relationship-focused, answer prompts thoughtfully
+**Facebook Dating**: Casual & friendly, mention lifestyle & values, be respectful
+**Match**: Tell your story with substance, balance self-description with seeking
+**eHarmony**: Reflective & thoughtful, focus on values, show emotional maturity
+**OkCupid**: Detailed & specific, show personality & quirks, answer matching questions
+**Instagram**: Memorable hook, strategic emoji use, make them want to follow
 
 ## Tone + Action System
 

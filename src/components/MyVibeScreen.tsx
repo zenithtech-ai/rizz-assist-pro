@@ -17,8 +17,10 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { ChevronLeft, User, Pencil, Lock, Zap } from 'lucide-react-native';
 
 import { COLORS } from '@/lib/constants';
-import { usePersonaStore } from '@/lib/personaStore';
+import { usePersonaStore, DatingAppProfile } from '@/lib/personaStore';
 import { useTokenStore } from '@/lib/tokenStore';
+import { DatingAppsEditor } from './DatingAppsEditor';
+import { DatingAppId } from '@/lib/datingAppsKnowledge';
 
 export function MyVibeScreen() {
   const insets = useSafeAreaInsets();
@@ -28,6 +30,8 @@ export function MyVibeScreen() {
   const savedAboutMe = usePersonaStore((s) => s.aboutMe);
   const saveAboutMe = usePersonaStore((s) => s.setAboutMe);
   const isLoaded = usePersonaStore((s) => s.isLoaded);
+  const datingAppProfiles = usePersonaStore((s) => s.datingAppProfiles);
+  const setDatingAppProfile = usePersonaStore((s) => s.setDatingAppProfile);
 
   // Check if user has a paid plan (silver or gold)
   const planType = useTokenStore((s) => s.planType);
@@ -56,6 +60,10 @@ export function MyVibeScreen() {
     setIsSaving(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
+  };
+
+  const handleDatingAppProfileSave = async (appId: DatingAppId, fields: Record<string, string>) => {
+    await setDatingAppProfile(appId, fields);
   };
 
   const hasChanges = aboutMe !== savedAboutMe;
@@ -90,6 +98,17 @@ export function MyVibeScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            {/* Dating Apps Section - PRO Feature */}
+            {isPaidUser && (
+              <Animated.View entering={FadeInDown.duration(300)} className="mb-8">
+                <DatingAppsEditor
+                  onProfileSave={handleDatingAppProfileSave}
+                  savedProfiles={datingAppProfiles}
+                  aboutMe={aboutMe}
+                />
+              </Animated.View>
+            )}
+
             {/* About Me Section */}
             <Animated.View entering={FadeInDown.duration(400)}>
               <View className="flex-row items-center mb-2">
@@ -136,7 +155,7 @@ export function MyVibeScreen() {
                   </View>
 
                   <Text className="text-white/40 text-xs mt-2 ml-1">
-                    This is optional but is recommended - this helps AI craft replies that sound more like you
+                    This is optional but is recommended - this helps AI craft replies that sound more like you. Your About Me will also be used to optimize your dating app profiles!
                   </Text>
                 </>
               ) : (
@@ -149,8 +168,10 @@ export function MyVibeScreen() {
                   }}
                 >
                   <Text className="text-white/70 text-sm leading-5 mb-4">
-                    Add your likes, dislikes, quirks & personal vibe to fine-tune the AI to your exact personality.{'\n\n'}
-                    Free users get solid replies. PRO users get replies that sound unmistakably you.
+                    Unlock PRO to:{'\n\n'}
+                    • Add your About Me for personalized replies{'\n'}
+                    • Optimize profiles for 8 dating apps (Tinder, Bumble, Hinge, etc.){'\n'}
+                    • Get AI-powered suggestions for each app
                   </Text>
 
                   <Pressable
@@ -170,12 +191,12 @@ export function MyVibeScreen() {
                   >
                     <Zap size={20} color="#FFF" />
                     <Text className="text-white font-bold text-base ml-2">
-                      Upgrade to PRO – Unlock About Me
+                      Upgrade to PRO
                     </Text>
                   </Pressable>
 
                   <Text className="text-white/40 text-xs text-center mt-3">
-                    (Plus more replies and premium features)
+                    (Plus unlimited replies)
                   </Text>
                 </View>
               )}

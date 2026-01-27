@@ -1,11 +1,13 @@
 // Rizz Assist Pro - Persona & Profile Store
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DatingAppId } from './datingAppsKnowledge';
 
 const STORAGE_KEYS = {
   PERSONA_ID: 'rizzassist_persona_id',
   CUSTOM_PERSONA: 'rizzassist_custom_persona',
   ABOUT_ME: 'rizzassist_about_me',
+  DATING_APP_PROFILES: 'rizzassist_dating_app_profiles',
 } as const;
 
 // Pre-defined personas with full descriptions
@@ -86,10 +88,18 @@ export const PERSONAS = [
 
 export type PersonaId = typeof PERSONAS[number]['id'];
 
+// Dating app profile data structure
+export interface DatingAppProfile {
+  appId: DatingAppId;
+  fieldValues: Record<string, string>; // key -> user's text for that field
+  lastOptimized?: number; // timestamp of last optimization
+}
+
 interface PersonaState {
   selectedPersonaId: PersonaId | 'custom';
   customPersonaText: string;
   aboutMe: string;
+  datingAppProfiles: Partial<Record<DatingAppId, DatingAppProfile>>;
   isLoaded: boolean;
 
   // Actions
@@ -99,26 +109,32 @@ interface PersonaState {
   setAboutMe: (text: string) => Promise<void>;
   saveAll: (personaId: PersonaId | 'custom', customText: string, aboutMe: string) => Promise<void>;
   getActivePersonaDescription: () => string;
+  setDatingAppProfile: (appId: DatingAppId, fieldValues: Record<string, string>) => Promise<void>;
+  getDatingAppProfile: (appId: DatingAppId) => DatingAppProfile | undefined;
+  loadDatingAppProfiles: () => Promise<void>;
 }
 
 export const usePersonaStore = create<PersonaState>((set, get) => ({
   selectedPersonaId: 'cheeky-tease',
   customPersonaText: '',
   aboutMe: '',
+  datingAppProfiles: {},
   isLoaded: false,
 
   loadState: async () => {
     try {
-      const [personaId, customPersona, aboutMe] = await Promise.all([
+      const [personaId, customPersona, aboutMe, profilesJson] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.PERSONA_ID),
         AsyncStorage.getItem(STORAGE_KEYS.CUSTOM_PERSONA),
         AsyncStorage.getItem(STORAGE_KEYS.ABOUT_ME),
+        AsyncStorage.getItem(STORAGE_KEYS.DATING_APP_PROFILES),
       ]);
 
       set({
         selectedPersonaId: (personaId as PersonaId | 'custom') || 'cheeky-tease',
         customPersonaText: customPersona || '',
         aboutMe: aboutMe || '',
+        datingAppProfiles: profilesJson ? JSON.parse(profilesJson) : {},
         isLoaded: true,
       });
     } catch (error) {
@@ -154,6 +170,42 @@ export const usePersonaStore = create<PersonaState>((set, get) => ({
       AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_PERSONA, customText),
       AsyncStorage.setItem(STORAGE_KEYS.ABOUT_ME, aboutMe),
     ]);
+  },
+
+  setDatingAppProfile: async (appId: DatingAppId, fieldValues: Record<string, string>) => {
+    set((state) => ({
+      datingAppProfiles: {
+        ...state.datingAppProfiles,
+        [appId]: {
+          appId,
+          fieldValues,
+          lastOptimized: Date.now(),
+        },
+      },
+    }));
+
+    // Save to storage
+    const state = get();
+    await AsyncStorage.setItem(
+      STORAGE_KEYS.DATING_APP_PROFILES,
+      JSON.stringify(state.datingAppProfiles)
+    );
+  },
+
+  getDatingAppProfile: (appId: DatingAppId) => {
+    const { datingAppProfiles } = get();
+    return datingAppProfiles[appId];
+  },
+
+  loadDatingAppProfiles: async () => {
+    try {
+      const profilesJson = await AsyncStorage.getItem(STORAGE_KEYS.DATING_APP_PROFILES);
+      if (profilesJson) {
+        set({ datingAppProfiles: JSON.parse(profilesJson) });
+      }
+    } catch (error) {
+      console.error('Error loading dating app profiles:', error);
+    }
   },
 
   getActivePersonaDescription: () => {
