@@ -579,9 +579,11 @@ export default function ReplyGeneratorPage() {
 
             {/* Generate Button */}
             <View className="mb-2">
-              <Text className="text-white/50 text-xs text-center mb-3">
-                Ready? Generate
-              </Text>
+              <View className="mb-3">
+                <Text className="text-white/50 text-xs text-center">
+                  Ready? Generate
+                </Text>
+              </View>
               <Animated.View
                 style={[
                   {
