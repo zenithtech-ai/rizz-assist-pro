@@ -142,7 +142,14 @@ export function SettingsScreen() {
             {/* Stats Row */}
             <View className="flex-row mb-4">
               <View className="flex-1 bg-white/5 rounded-xl p-3 mr-2">
-                <Text className="text-white/50 text-xs mb-1">Replies Left</Text>
+                <View className="flex-row items-center justify-between mb-1">
+                  <Text className="text-white/50 text-xs">Tokens Left</Text>
+                  <Pressable
+                    onPress={() => router.push('/token-usage-guide')}
+                  >
+                    <Text className="text-pink-300 text-xs underline">Learn more</Text>
+                  </Pressable>
+                </View>
                 <Text className="text-white font-bold text-xl">
                   {tokens}
                   <Text className="text-white/40 text-sm font-normal">/{getMaxTokens()}</Text>
@@ -182,7 +189,7 @@ export function SettingsScreen() {
                 >
                   <Zap size={20} color="#FFF" />
                   <Text className="text-white font-bold ml-2">
-                    Upgrade for More Replies
+                    Upgrade for More Tokens
                   </Text>
                 </Pressable>
               )}
@@ -195,7 +202,7 @@ export function SettingsScreen() {
                 >
                   <Crown size={18} color="#FFF" />
                   <Text className="text-white font-bold ml-2">
-                    Upgrade to Gold - Double Replies
+                    Upgrade to Gold - Double Tokens
                   </Text>
                 </Pressable>
               )}
@@ -229,7 +236,7 @@ export function SettingsScreen() {
                 <View>
                   <View className="flex-row items-start mb-2">
                     <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />
-                    <Text className="text-white/80 text-sm flex-1">1,000 replies/month</Text>
+                    <Text className="text-white/80 text-sm flex-1">1,000 tokens/month</Text>
                   </View>
                   <View className="flex-row items-start mb-2">
                     <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />
@@ -251,7 +258,7 @@ export function SettingsScreen() {
                 <View>
                   <View className="flex-row items-start mb-2">
                     <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />
-                    <Text className="text-white/80 text-sm flex-1">2,000 replies/month</Text>
+                    <Text className="text-white/80 text-sm flex-1">2,000 tokens/month</Text>
                   </View>
                   <View className="flex-row items-start mb-2">
                     <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />

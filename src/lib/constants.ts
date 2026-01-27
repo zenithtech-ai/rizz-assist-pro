@@ -150,8 +150,8 @@ export const SUBSCRIPTION_PRODUCTS = {
   },
 };
 
-export const FREE_DAILY_LIMIT = 3;
-export const FREE_TOKEN_LIMIT = 3; // Daily limit for free users
+export const FREE_DAILY_LIMIT = 5;
+export const FREE_TOKEN_LIMIT = 5; // Daily limit for free users
 export const SILVER_MONTHLY_TOKENS = 1000;
 export const GOLD_MONTHLY_TOKENS = 2000;
 export const PRO_WEEKLY_TOKENS = 25; // Legacy - keeping for compatibility

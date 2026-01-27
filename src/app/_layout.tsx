@@ -66,6 +66,13 @@ function RootLayoutNav() {
             presentation: 'modal',
           }}
         />
+        <Stack.Screen
+          name="token-usage-guide"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );
