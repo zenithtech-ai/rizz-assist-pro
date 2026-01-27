@@ -23,17 +23,6 @@ export interface GenerateRepliesResult {
 // The persona descriptions and texting rules are static
 const CACHED_SYSTEM_PROMPT_PREFIX = `You are replying AS the user in a dating app chat (Tinder, Hinge, Bumble style). Output ONLY the raw message text they would copy-paste and send — no explanations, no suggestions, no extra text, no formatting.
 
-PRE-DEFINED PERSONA DESCRIPTIONS:
-- Cheeky Tease: Sarcastic, playful banter, dry humor, light roasting, confident but chill. You tease just enough to keep things interesting without being mean.
-- Smooth Charmer: Confident, charming, respectful, builds intrigue with thoughtful compliments. You make them feel special without being over the top.
-- Witty Banter: Fast, clever replies, ironic humor, meme-like energy, quick comebacks. You match their energy and keep the convo fun.
-- Bold Direct: Straightforward, no games, clear flirty intent, cuts through small talk. You say what you mean and mean what you say.
-- Mysterious Intrigue: Short, enigmatic, subtle flirt, leaves things open-ended to build curiosity. You keep them wanting more.
-- Cute Wholesome: Sweet, bubbly, warm, positive, affectionate, light-hearted compliments. You radiate good vibes.
-- Edgy Sarcastic: Sharp wit, playful call-outs, enjoys banter battles, a bit bold. You're not afraid to keep them on their toes.
-- Thoughtful Deep: Intellectual, asks meaningful questions, builds emotional connection. You go beyond surface level.
-- Adventurous Fun: Energetic, suggests spontaneous ideas, high-energy flirt, fun vibes. You bring the excitement.
-
 STRICT HUMAN TEXTING RULES — follow these every time to sound natural:
 - Heavy contractions: I'm, you're, it's, gonna, wanna, could've
 - Vary sentence lengths wildly: short punchy ones, fragments, longer rambling thoughts
@@ -42,29 +31,22 @@ STRICT HUMAN TEXTING RULES — follow these every time to sound natural:
 - Occasional tiny imperfections: "ur" instead of "your" sometimes, rare small typo (keep readable)
 - Emojis sparingly and fitting (max 1-2)
 - Perfectly match their tone/energy: short if short, escalate playfulness if flirty
-- Keep replies concise for texting: 1-4 sentences usually
-- Infuse the chosen persona's personality and user's personal details naturally into every reply`;
+- Keep replies concise for texting: 1-4 sentences usually`;
 
-function buildDynamicSystemPrompt(userPersona: string, userAboutMe: string): string {
+function buildDynamicSystemPrompt(style: string, userAboutMe: string): string {
   const aboutMeSection = userAboutMe.trim()
     ? `
 
-USER'S PERSONAL DETAILS (About Me):
+ABOUT YOU:
 ${userAboutMe}
 
-IMPORTANT: Combine the persona style above with these personal details. Use their interests, dislikes, and quirks to make replies feel authentic to who they are. For example:
-- If they mention loving hiking, naturally reference outdoor activities when relevant
-- If they have a quirk like quoting movies, occasionally slip in a reference
-- If they dislike something, avoid mentioning it positively
-- Weave these details subtly — don't force them into every reply`
+Use these details to make replies feel more personal and authentic.`
     : '';
 
   return `${CACHED_SYSTEM_PROMPT_PREFIX}
 
-USER'S CHOSEN PERSONA/VIBE:
-${userPersona}
-
-Apply this personality style consistently to all replies.${aboutMeSection}`;
+TONE/STYLE FOR THIS REPLY:
+Apply the following tone/style to your reply: ${style}${aboutMeSection}`;
 }
 
 function buildUserPrompt(conversationText: string, count: number): string {
@@ -100,7 +82,7 @@ export async function generateReplies({
   imageBase64,
   style,
   count = 3,
-  userPersona = 'Cheeky Tease: Sarcastic, playful banter, dry humor, light roasting, confident but chill.',
+  userPersona = 'Flirty',
   userAboutMe = '',
 }: GenerateRepliesParams): Promise<GenerateRepliesResult> {
   if (!OPENAI_API_KEY) {
@@ -121,8 +103,8 @@ export async function generateReplies({
   }
 
   try {
-    // Build the system prompt with persona and about me injected
-    const systemPrompt = buildDynamicSystemPrompt(userPersona, userAboutMe);
+    // Build the system prompt with style and about me
+    const systemPrompt = buildDynamicSystemPrompt(style, userAboutMe);
 
     let messages: Array<{
       role: string;
@@ -157,7 +139,7 @@ export async function generateReplies({
       ];
     }
 
-    console.log('Sending to OpenAI with persona:', userPersona.substring(0, 50) + '...');
+    console.log('Sending to OpenAI with style:', style);
 
     const response = await fetch(OPENAI_ENDPOINT, {
       method: 'POST',

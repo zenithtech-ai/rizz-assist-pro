@@ -40,7 +40,6 @@ import {
 import { TokenCounter } from '@/components/TokenCounter';
 import { ReplyBubble } from '@/components/ReplyBubble';
 import { useTokenStore } from '@/lib/tokenStore';
-import { usePersonaStore, PERSONAS } from '@/lib/personaStore';
 import {
   COLORS,
   TONE_OPTIONS,
@@ -197,16 +196,6 @@ export function HomeScreen() {
   // Check if user has paid plan for About Me
   const isPaidUser = planType === 'silver' || planType === 'gold';
 
-  // Persona store
-  const selectedPersonaId = usePersonaStore((s) => s.selectedPersonaId);
-  const getActivePersonaDescription = usePersonaStore((s) => s.getActivePersonaDescription);
-  const aboutMe = usePersonaStore((s) => s.aboutMe);
-
-  // Get current persona info for display
-  const currentPersona = selectedPersonaId === 'custom'
-    ? { name: 'Custom Vibe', emoji: '✨' }
-    : PERSONAS.find(p => p.id === selectedPersonaId) || PERSONAS[0];
-
   // Animated button glow
   const glowOpacity = useSharedValue(0.4);
 
@@ -278,7 +267,6 @@ export function HomeScreen() {
         hasText: !!message.trim(),
         hasImage: !!screenshotBase64,
         style: styleString,
-        persona: currentPersona.name
       });
 
       const result = await generateAIReplies({
@@ -286,8 +274,8 @@ export function HomeScreen() {
         imageBase64: screenshotBase64 || undefined,
         style: styleString,
         count: 3,
-        userPersona: getActivePersonaDescription(),
-        userAboutMe: aboutMe,
+        userPersona: styleString,
+        userAboutMe: '',
       });
 
       console.log('AI result:', {
@@ -466,9 +454,8 @@ export function HomeScreen() {
                   }}
                   className="mt-5 flex-row items-center justify-center active:opacity-70"
                 >
-                  <Text className="text-xl mr-2">{currentPersona.emoji}</Text>
                   <Text className="text-white/50 text-sm">
-                    {aboutMe ? `${currentPersona.name} + About Me` : 'Set up your vibe & profile'}
+                    Set up your profile
                   </Text>
                   <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" />
                 </Pressable>

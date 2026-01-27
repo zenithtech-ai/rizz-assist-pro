@@ -1,4 +1,4 @@
-// Rizz Assist Pro - My Vibe & Profile Screen
+// Rizz Assist Pro - My Profile Screen
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -14,75 +14,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Check, ChevronLeft, Sparkles, User, Pencil, Lock, Zap } from 'lucide-react-native';
+import { ChevronLeft, User, Pencil, Lock, Zap } from 'lucide-react-native';
 
 import { COLORS } from '@/lib/constants';
-import { usePersonaStore, PERSONAS, PersonaId } from '@/lib/personaStore';
+import { usePersonaStore } from '@/lib/personaStore';
 import { useTokenStore } from '@/lib/tokenStore';
-
-interface PersonaCardProps {
-  persona: typeof PERSONAS[number];
-  isSelected: boolean;
-  onSelect: () => void;
-}
-
-function PersonaCard({ persona, isSelected, onSelect }: PersonaCardProps) {
-  return (
-    <Pressable
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        onSelect();
-      }}
-      className="mb-3 active:opacity-90"
-    >
-      <View
-        className="rounded-2xl p-4"
-        style={{
-          backgroundColor: isSelected ? 'rgba(255, 105, 180, 0.25)' : 'rgba(255, 255, 255, 0.08)',
-          borderWidth: 2,
-          borderColor: isSelected ? COLORS.neonPink : 'transparent',
-        }}
-      >
-        <View className="flex-row items-center justify-between mb-2">
-          <View className="flex-row items-center flex-1">
-            <Text className="text-2xl mr-2">{persona.emoji}</Text>
-            <View className="flex-1">
-              <Text className="text-white font-bold text-base">{persona.name}</Text>
-              <Text className="text-white/60 text-sm">{persona.shortDesc}</Text>
-            </View>
-          </View>
-          {isSelected && (
-            <View
-              className="w-6 h-6 rounded-full items-center justify-center"
-              style={{ backgroundColor: COLORS.neonPink }}
-            >
-              <Check size={14} color="#FFFFFF" strokeWidth={3} />
-            </View>
-          )}
-        </View>
-
-        {/* Sample Reply Preview */}
-        <View
-          className="mt-2 p-3 rounded-xl"
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
-        >
-          <Text className="text-white/50 text-xs mb-1">Sample reply:</Text>
-          <Text className="text-white/80 text-sm italic">"{persona.sampleReply}"</Text>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
 
 export function MyVibeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const loadState = usePersonaStore((s) => s.loadState);
-  const savedPersonaId = usePersonaStore((s) => s.selectedPersonaId);
-  const savedCustomText = usePersonaStore((s) => s.customPersonaText);
   const savedAboutMe = usePersonaStore((s) => s.aboutMe);
-  const saveAll = usePersonaStore((s) => s.saveAll);
+  const saveAboutMe = usePersonaStore((s) => s.setAboutMe);
   const isLoaded = usePersonaStore((s) => s.isLoaded);
 
   // Check if user has a paid plan (silver or gold)
@@ -90,8 +34,6 @@ export function MyVibeScreen() {
   const isPaidUser = planType === 'silver' || planType === 'gold';
 
   // Local state for editing
-  const [selectedId, setSelectedId] = useState<PersonaId | 'custom'>(savedPersonaId);
-  const [customText, setCustomText] = useState(savedCustomText);
   const [aboutMe, setAboutMe] = useState(savedAboutMe);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -101,27 +43,22 @@ export function MyVibeScreen() {
 
   useEffect(() => {
     if (isLoaded) {
-      setSelectedId(savedPersonaId);
-      setCustomText(savedCustomText);
       setAboutMe(savedAboutMe);
     }
-  }, [isLoaded, savedPersonaId, savedCustomText, savedAboutMe]);
+  }, [isLoaded, savedAboutMe]);
 
   const handleSave = async () => {
     setIsSaving(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    await saveAll(selectedId, customText, aboutMe);
+    await saveAboutMe(aboutMe);
 
     setIsSaving(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
   };
 
-  const hasChanges =
-    selectedId !== savedPersonaId ||
-    customText !== savedCustomText ||
-    aboutMe !== savedAboutMe;
+  const hasChanges = aboutMe !== savedAboutMe;
 
   return (
     <View style={{ flex: 1 }}>
@@ -143,7 +80,7 @@ export function MyVibeScreen() {
             >
               <ChevronLeft size={28} color="#FFFFFF" />
             </Pressable>
-            <Text className="text-white text-xl font-bold">My Vibe & Profile</Text>
+            <Text className="text-white text-xl font-bold">My Profile</Text>
             <View style={{ width: 44 }} />
           </View>
 
@@ -153,89 +90,10 @@ export function MyVibeScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* Persona Selection Section */}
-            <Animated.View entering={FadeInDown.delay(100).duration(400)}>
-              <View className="flex-row items-center mb-4">
-                <Sparkles size={20} color={COLORS.neonPink} />
-                <Text className="text-white font-bold text-lg ml-2">Choose Your Vibe</Text>
-              </View>
-              <Text className="text-white/60 text-sm mb-4">
-                Pick a personality that matches how you want to come across in your replies
-              </Text>
-
-              {PERSONAS.map((persona) => (
-                <PersonaCard
-                  key={persona.id}
-                  persona={persona}
-                  isSelected={selectedId === persona.id}
-                  onSelect={() => setSelectedId(persona.id)}
-                />
-              ))}
-            </Animated.View>
-
-            {/* Custom Persona Section */}
-            <Animated.View entering={FadeInDown.delay(200).duration(400)} className="mt-6">
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setSelectedId('custom');
-                }}
-                className="mb-3"
-              >
-                <View
-                  className="rounded-2xl p-4"
-                  style={{
-                    backgroundColor: selectedId === 'custom' ? 'rgba(255, 105, 180, 0.25)' : 'rgba(255, 255, 255, 0.08)',
-                    borderWidth: 2,
-                    borderColor: selectedId === 'custom' ? COLORS.neonPink : 'transparent',
-                  }}
-                >
-                  <View className="flex-row items-center justify-between mb-2">
-                    <View className="flex-row items-center">
-                      <Text className="text-2xl mr-2">✨</Text>
-                      <View>
-                        <Text className="text-white font-bold text-base">Custom Vibe</Text>
-                        <Text className="text-white/60 text-sm">Define your own style</Text>
-                      </View>
-                    </View>
-                    {selectedId === 'custom' && (
-                      <View
-                        className="w-6 h-6 rounded-full items-center justify-center"
-                        style={{ backgroundColor: COLORS.neonPink }}
-                      >
-                        <Check size={14} color="#FFFFFF" strokeWidth={3} />
-                      </View>
-                    )}
-                  </View>
-                </View>
-              </Pressable>
-
-              {selectedId === 'custom' && (
-                <View
-                  className="rounded-xl p-4 mb-2"
-                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
-                >
-                  <Text className="text-white/70 text-sm mb-2">
-                    Describe your personality/style:
-                  </Text>
-                  <TextInput
-                    value={customText}
-                    onChangeText={setCustomText}
-                    placeholder="E.g., Sarcastic and witty with dry humor, loves dad jokes..."
-                    placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                    multiline
-                    numberOfLines={3}
-                    className="text-white text-base min-h-[80px]"
-                    style={{ textAlignVertical: 'top' }}
-                  />
-                </View>
-              )}
-            </Animated.View>
-
             {/* About Me Section */}
-            <Animated.View entering={FadeInDown.delay(300).duration(400)} className="mt-8">
+            <Animated.View entering={FadeInDown.duration(400)}>
               <View className="flex-row items-center mb-2">
-                <User size={20} color={COLORS.neonPink} />
+                <Pencil size={20} color={COLORS.neonPink} />
                 <Text className="text-white font-bold text-lg ml-2">About Me</Text>
                 {!isPaidUser && (
                   <View className="ml-2 bg-white/15 px-2 py-0.5 rounded-full flex-row items-center">
@@ -260,7 +118,7 @@ export function MyVibeScreen() {
                     }}
                   >
                     <View className="flex-row items-center mb-3">
-                      <Pencil size={16} color="rgba(255, 255, 255, 0.6)" />
+                      <User size={16} color="rgba(255, 255, 255, 0.6)" />
                       <Text className="text-white/70 text-sm ml-2">
                         Likes, Dislikes, Quirks, etc.
                       </Text>
@@ -290,16 +148,8 @@ export function MyVibeScreen() {
                     borderColor: 'rgba(255, 105, 180, 0.3)',
                   }}
                 >
-                  <View className="flex-row items-center mb-3">
-                    <Sparkles size={22} color={COLORS.neonPink} />
-                    <Text className="text-white font-bold text-lg ml-2">
-                      Unlock Replies That Are 100% You
-                    </Text>
-                  </View>
-
                   <Text className="text-white/70 text-sm leading-5 mb-4">
-                    Right now, your rizz suggestions use our base style.{'\n\n'}
-                    Add your likes, dislikes, quirks & personal vibe in About Me to fine-tune the AI to your exact personality - nothing but smooth, authentic texts that feel like the real you.{'\n\n'}
+                    Add your likes, dislikes, quirks & personal vibe to fine-tune the AI to your exact personality.{'\n\n'}
                     Free users get solid replies. PRO users get replies that sound unmistakably you.
                   </Text>
 
@@ -325,7 +175,7 @@ export function MyVibeScreen() {
                   </Pressable>
 
                   <Text className="text-white/40 text-xs text-center mt-3">
-                    (Plus 50+ replies a day, priority support & more)
+                    (Plus more replies and premium features)
                   </Text>
                 </View>
               )}
