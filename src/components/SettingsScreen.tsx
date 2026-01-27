@@ -15,6 +15,7 @@ import {
   CameraOff,
   Zap,
   Pencil,
+  Check,
 } from 'lucide-react-native';
 
 import { CollapsibleSection } from '@/components/CollapsibleSection';
@@ -120,7 +121,7 @@ export function SettingsScreen() {
             {/* Plan Header */}
             <View className="flex-row items-center justify-between mb-4">
               <View className="flex-row items-center">
-                <Crown size={22} color={isPaid ? '#FFD700' : '#888'} />
+                <Crown size={22} color={isPaid ? '#22C55E' : '#888'} />
                 <Text className="text-white font-bold text-lg ml-2">
                   {getPlanName()} Plan
                 </Text>
@@ -165,33 +166,99 @@ export function SettingsScreen() {
               </View>
             </View>
 
-            {/* Upgrade CTA */}
-            {!isPaid && (
-              <Pressable
-                onPress={handleUpgrade}
-                className="py-4 rounded-xl flex-row items-center justify-center active:opacity-80"
-                style={{ backgroundColor: COLORS.neonPink }}
-              >
-                <Zap size={20} color="#FFF" />
-                <Text className="text-white font-bold ml-2">
-                  Upgrade for More Replies + Screenshot Uploads
-                </Text>
-              </Pressable>
-            )}
+            {/* Plan Actions */}
+            <View className="gap-3">
+              {!isPaid && (
+                <Pressable
+                  onPress={handleUpgrade}
+                  className="py-4 rounded-xl flex-row items-center justify-center active:opacity-80"
+                  style={{ backgroundColor: COLORS.neonPink }}
+                >
+                  <Zap size={20} color="#FFF" />
+                  <Text className="text-white font-bold ml-2">
+                    Upgrade for More Replies
+                  </Text>
+                </Pressable>
+              )}
 
-            {planType === 'silver' && (
-              <Pressable
-                onPress={handleUpgrade}
-                className="py-3 rounded-xl flex-row items-center justify-center active:opacity-80"
-                style={{ backgroundColor: '#FFD700' }}
-              >
-                <Crown size={18} color="#000" />
-                <Text className="text-black font-bold ml-2">
-                  Upgrade to Gold - Double your replies
-                </Text>
-              </Pressable>
-            )}
+              {planType === 'silver' && (
+                <Pressable
+                  onPress={handleUpgrade}
+                  className="py-4 rounded-xl flex-row items-center justify-center active:opacity-80"
+                  style={{ backgroundColor: '#22C55E' }}
+                >
+                  <Crown size={18} color="#FFF" />
+                  <Text className="text-white font-bold ml-2">
+                    Upgrade to Gold - Double Replies
+                  </Text>
+                </Pressable>
+              )}
+
+              {isPaid && (
+                <Pressable
+                  onPress={handleManageSubscription}
+                  className="py-4 rounded-xl flex-row items-center justify-center active:opacity-80"
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+                >
+                  <ExternalLink size={18} color="#FFF" />
+                  <Text className="text-white font-bold ml-2">
+                    Change Plan or Cancel
+                  </Text>
+                </Pressable>
+              )}
+            </View>
           </View>
+
+          {/* Plan Comparison */}
+          {!isPaid && (
+            <View className="mb-6">
+              <Text className="text-white font-bold text-lg mb-3">Choose Your Plan</Text>
+
+              {/* Silver Plan */}
+              <View className="bg-white/5 rounded-2xl p-4 mb-3 border border-white/20">
+                <View className="flex-row items-center justify-between mb-3">
+                  <Text className="text-white font-bold text-base">Silver</Text>
+                  <Text className="text-white/60 text-sm">$9.95/mo</Text>
+                </View>
+                <View>
+                  <View className="flex-row items-start mb-2">
+                    <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />
+                    <Text className="text-white/80 text-sm flex-1">1,000 replies/month</Text>
+                  </View>
+                  <View className="flex-row items-start mb-2">
+                    <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />
+                    <Text className="text-white/80 text-sm flex-1">Profile analysis & openers</Text>
+                  </View>
+                  <View className="flex-row items-start">
+                    <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />
+                    <Text className="text-white/80 text-sm flex-1">Screenshot uploads</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Gold Plan */}
+              <View className="bg-white/5 rounded-2xl p-4 border border-white/20">
+                <View className="flex-row items-center justify-between mb-3">
+                  <Text className="text-white font-bold text-base">Gold</Text>
+                  <Text className="text-white/60 text-sm">$17.95/mo</Text>
+                </View>
+                <View>
+                  <View className="flex-row items-start mb-2">
+                    <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />
+                    <Text className="text-white/80 text-sm flex-1">2,000 replies/month</Text>
+                  </View>
+                  <View className="flex-row items-start mb-2">
+                    <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />
+                    <Text className="text-white/80 text-sm flex-1">Profile analysis & openers</Text>
+                  </View>
+                  <View className="flex-row items-start">
+                    <Check size={16} color="#22C55E" style={{ marginRight: 8, marginTop: 2 }} />
+                    <Text className="text-white/80 text-sm flex-1">Screenshot uploads</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* My Profile */}
           <View className="mb-6">
