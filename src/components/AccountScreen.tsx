@@ -15,6 +15,8 @@ import {
   User,
   Lock,
   Pencil,
+  Crown,
+  Star,
 } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
@@ -81,7 +83,19 @@ export function AccountScreen() {
                 {!isPaidUser && (
                   <View className="ml-2 bg-white/15 px-2 py-0.5 rounded-full flex-row items-center">
                     <Lock size={10} color="rgba(255, 255, 255, 0.7)" />
-                    <Text className="text-white/70 text-xs ml-1">PRO</Text>
+                    <Text className="text-white/70 text-xs ml-1">Silver & Gold</Text>
+                  </View>
+                )}
+                {isPaidUser && planType === 'gold' && (
+                  <View className="ml-2 bg-white/15 px-2 py-0.5 rounded-full flex-row items-center">
+                    <Crown size={10} color={COLORS.neonPink} />
+                    <Text className="text-white/70 text-xs ml-1">Gold</Text>
+                  </View>
+                )}
+                {isPaidUser && planType === 'silver' && (
+                  <View className="ml-2 bg-white/15 px-2 py-0.5 rounded-full flex-row items-center">
+                    <Star size={10} color={COLORS.neonPink} />
+                    <Text className="text-white/70 text-xs ml-1">Silver</Text>
                   </View>
                 )}
               </View>
