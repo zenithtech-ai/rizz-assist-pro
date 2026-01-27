@@ -83,6 +83,7 @@ export default function DatingAppDetailScreen() {
                   aboutMe={aboutMe}
                   autoExpandAppId={appId}
                   hideHeader={false}
+                  singleAppMode={true}
                 />
               )}
             </Animated.View>

@@ -27,6 +27,7 @@ interface DatingAppsEditorProps {
   aboutMe: string;
   autoExpandAppId?: DatingAppId | null;
   hideHeader?: boolean;
+  singleAppMode?: boolean;
 }
 
 interface AppEditState {
@@ -37,9 +38,9 @@ interface AppEditState {
   isSaving: boolean;
 }
 
-export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles, aboutMe, autoExpandAppId, hideHeader }: DatingAppsEditorProps) {
+export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles, aboutMe, autoExpandAppId, hideHeader, singleAppMode }: DatingAppsEditorProps) {
   const [expandedApps, setExpandedApps] = useState<Set<DatingAppId>>(
-    autoExpandAppId ? new Set([autoExpandAppId]) : new Set()
+    autoExpandAppId && !singleAppMode ? new Set([autoExpandAppId]) : (singleAppMode && autoExpandAppId ? new Set([autoExpandAppId]) : new Set())
   );
   const [appStates, setAppStates] = useState<Partial<Record<DatingAppId, AppEditState>>>({});
   const [deleteConfirmAppId, setDeleteConfirmAppId] = useState<DatingAppId | null>(null);
@@ -166,10 +167,12 @@ export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles
     try {
       await onProfileSave(appId, state.fieldValues);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      // Collapse the app after successful save
-      const newExpanded = new Set(expandedApps);
-      newExpanded.delete(appId);
-      setExpandedApps(newExpanded);
+      // Only collapse if not in single app mode
+      if (!singleAppMode) {
+        const newExpanded = new Set(expandedApps);
+        newExpanded.delete(appId);
+        setExpandedApps(newExpanded);
+      }
       // Reset optimization state
       setAppStates(prev => ({
         ...prev,
@@ -193,10 +196,12 @@ export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles
   const handleDelete = async (appId: DatingAppId) => {
     await onProfileDelete(appId);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    // Collapse the app after successful delete
-    const newExpanded = new Set(expandedApps);
-    newExpanded.delete(appId);
-    setExpandedApps(newExpanded);
+    // Only collapse if not in single app mode
+    if (!singleAppMode) {
+      const newExpanded = new Set(expandedApps);
+      newExpanded.delete(appId);
+      setExpandedApps(newExpanded);
+    }
     // Clear the delete confirmation
     setDeleteConfirmAppId(null);
   };
@@ -223,7 +228,7 @@ export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles
       )}
 
       {/* Dating Apps List */}
-      {DATING_APPS.map(app => {
+      {DATING_APPS.filter(app => singleAppMode && autoExpandAppId ? app.id === autoExpandAppId : true).map(app => {
         const isExpanded = expandedApps.has(app.id);
         const state = appStates[app.id];
         const hasSaved = !!savedProfiles[app.id];
@@ -238,7 +243,7 @@ export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles
           >
             {/* App Header - Always Visible */}
             <Pressable
-              onPress={() => toggleApp(app.id)}
+              onPress={() => !singleAppMode && toggleApp(app.id)}
               className="active:opacity-70"
             >
               <View

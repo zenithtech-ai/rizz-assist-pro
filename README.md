@@ -87,12 +87,12 @@ The app includes a powerful **Dating App Profile Optimizer** that helps users op
 ### How It Works Now
 
 1. **View Dating Apps List**: In the My Profile tab, paid users see a list of 8 dating apps with navigation
-2. **Click an App**: Tap any app to navigate to a dedicated detail screen showing ONLY that app
-3. **Expand & Edit**: The app auto-expands on the detail screen with all profile fields ready to edit
+2. **Click an App**: Tap any app to navigate to a dedicated detail screen showing **ONLY that app** (clean, focused view)
+3. **Auto-Expanded & Locked**: The selected app is automatically expanded on the detail screen with all fields visible and ready to edit (cannot be collapsed)
 4. **Get AI Suggestions**: Click "Optimize" to receive app-specific improvement suggestions
-5. **Apply & Save**: Apply suggestions and click Save to store profile locally
-6. **Delete Profile**: Click the delete button (trash icon) to clear all text in that profile
-7. **Back Button**: Use the back button to return to the apps list
+5. **Apply & Save**: Apply suggestions and click Save to store profile locally (app stays expanded)
+6. **Delete Profile**: Click the delete button (trash icon) to clear all text in that profile (app stays expanded)
+7. **Back Button**: Use the back button in the header to return to the apps list
 
 ### AI Optimization Features
 
