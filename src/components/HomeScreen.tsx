@@ -83,10 +83,12 @@ export default function HomeScreen() {
                   }}
                   className="flex-row items-center justify-center active:opacity-70"
                 >
-                  <Text className="text-white/50 text-sm">
-                    Start generating replies now
-                  </Text>
-                  <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" />
+                  <View className="flex-row items-center">
+                    <Text className="text-white/50 text-sm">
+                      Start generating replies now
+                    </Text>
+                    <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" style={{ marginLeft: 6 }} />
+                  </View>
                 </Pressable>
               </Animated.View>
               <Animated.View entering={FadeInUp.delay(550).duration(600)}>
@@ -97,10 +99,12 @@ export default function HomeScreen() {
                   }}
                   className="flex-row items-center justify-center active:opacity-70"
                 >
-                  <Text className="text-white/50 text-sm">
-                    Set up your profile
-                  </Text>
-                  <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" />
+                  <View className="flex-row items-center">
+                    <Text className="text-white/50 text-sm">
+                      Set up your profile
+                    </Text>
+                    <ChevronRight size={16} color="rgba(255, 255, 255, 0.3)" style={{ marginLeft: 6 }} />
+                  </View>
                 </Pressable>
               </Animated.View>
             </View>

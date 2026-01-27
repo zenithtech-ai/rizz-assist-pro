@@ -138,22 +138,22 @@ export const SUBSCRIPTION_PRODUCTS = {
     id: 'rizzassist.silver.monthly',
     name: 'Silver',
     price: '$9.95/mo',
-    monthlyReplies: 1500,
+    monthlyReplies: 1000,
     screenshotEnabled: true,
   },
   gold: {
     id: 'rizzassist.gold.monthly',
     name: 'Gold',
     price: '$17.95/mo',
-    monthlyReplies: 3000,
+    monthlyReplies: 2000,
     screenshotEnabled: true,
   },
 };
 
 export const FREE_DAILY_LIMIT = 3;
 export const FREE_TOKEN_LIMIT = 3; // Daily limit for free users
-export const SILVER_MONTHLY_TOKENS = 1500;
-export const GOLD_MONTHLY_TOKENS = 3000;
+export const SILVER_MONTHLY_TOKENS = 1000;
+export const GOLD_MONTHLY_TOKENS = 2000;
 export const PRO_WEEKLY_TOKENS = 25; // Legacy - keeping for compatibility
 
 export const DISCLAIMER_TEXT = `Rizz Assist Pro is not tested on all devices. It's provided as-is without any warranties and for education purposes only. Rizz Assist Pro is not affiliated with any other apps/dating/social media apps that it supports. Please read terms. You agree to use this app at your own risk. Please contact us via email for feedback/feature requests and if you find any glitches/bugs.`;
