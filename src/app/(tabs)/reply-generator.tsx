@@ -392,6 +392,42 @@ export default function ReplyGeneratorPage() {
             <TokenCounter />
           </View>
 
+          {/* Plan Info Banner */}
+          <Animated.View entering={FadeInDown.duration(400)} className="px-5 py-3">
+            <View
+              className="rounded-xl p-3"
+              style={{
+                backgroundColor: planType === 'free' ? 'rgba(255, 105, 180, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                borderWidth: 1,
+                borderColor: planType === 'free' ? 'rgba(255, 105, 180, 0.3)' : 'rgba(255, 255, 255, 0.15)',
+              }}
+            >
+              <View className="flex-row items-center justify-between">
+                <View className="flex-1">
+                  <Text className="text-white font-semibold text-sm mb-1">
+                    {planType === 'gold' ? '🏆 Gold Plan' : planType === 'silver' ? '⭐ Silver Plan' : '📊 Free Plan'}
+                  </Text>
+                  <Text className="text-white/70 text-xs">
+                    {planType === 'free'
+                      ? 'Limited to 3 replies a day - upgrade for unlimited replies & better personalization'
+                      : 'Unlimited replies & personalized replies'}
+                  </Text>
+                </View>
+                {planType === 'free' && (
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push('/(tabs)/settings');
+                    }}
+                    className="ml-3 active:opacity-70"
+                  >
+                    <Text className="text-white/60 text-xs underline">Upgrade</Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+          </Animated.View>
+
           <ScrollView
             className="flex-1"
             contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
