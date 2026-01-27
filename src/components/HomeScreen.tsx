@@ -74,7 +74,7 @@ export default function HomeScreen() {
             </Animated.View>
 
             {/* CTA Button */}
-            <Animated.View entering={FadeInUp.delay(500).duration(600)}>
+            <Animated.View entering={FadeInUp.delay(500).duration(600)} style={{ width: '100%' }}>
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
