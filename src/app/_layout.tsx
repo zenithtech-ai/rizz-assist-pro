@@ -8,12 +8,26 @@ import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import {
+  useFonts,
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+  Outfit_700Bold,
+} from '@expo-google-fonts/outfit';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+} from '@expo-google-fonts/inter';
 
 import { SplashScreen } from '@/components/SplashScreen';
 import { DisclaimerModal } from '@/components/DisclaimerModal';
 import { OnboardingScreen } from '@/components/OnboardingScreen';
+import AuthScreen from '@/app/auth';
 import { useTokenStore } from '@/lib/tokenStore';
 import { usePersonaStore } from '@/lib/personaStore';
+import { useAuthStore } from '@/lib/authStore';
 
 export const unstable_settings = {
   initialRouteName: '(tabs)',
@@ -24,13 +38,20 @@ ExpoSplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-type AppState = 'splash' | 'disclaimer' | 'onboarding' | 'ready';
+type AppState = 'splash' | 'auth' | 'disclaimer' | 'onboarding' | 'ready';
 
 function RootLayoutNav() {
   return (
     <ThemeProvider value={DarkTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="auth"
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+          }}
+        />
         <Stack.Screen
           name="paywall"
           options={{
@@ -53,6 +74,16 @@ function RootLayoutNav() {
 export default function RootLayout() {
   const [appState, setAppState] = useState<AppState>('splash');
 
+  const [fontsLoaded] = useFonts({
+    Outfit_400Regular,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
+    Outfit_700Bold,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+  });
+
   const loadState = useTokenStore((s) => s.loadState);
   const loadPersonaState = usePersonaStore((s) => s.loadState);
   const isLoaded = useTokenStore((s) => s.isLoaded);
@@ -61,9 +92,14 @@ export default function RootLayout() {
   const acceptDisclaimer = useTokenStore((s) => s.acceptDisclaimer);
   const completeOnboarding = useTokenStore((s) => s.completeOnboarding);
 
+  const checkAuth = useAuthStore((s) => s.checkAuth);
+  const user = useAuthStore((s) => s.user);
+  const authLoading = useAuthStore((s) => s.loading);
+
   useEffect(() => {
     loadState();
     loadPersonaState();
+    checkAuth();
   }, []);
 
   useEffect(() => {
@@ -75,7 +111,10 @@ export default function RootLayout() {
   const handleSplashComplete = async () => {
     await ExpoSplashScreen.hideAsync();
 
-    if (!hasAcceptedDisclaimer) {
+    // Check auth first - if no user, show auth screen
+    if (!user && !authLoading) {
+      setAppState('auth');
+    } else if (!hasAcceptedDisclaimer) {
       setAppState('disclaimer');
     } else if (!hasSeenOnboarding) {
       setAppState('onboarding');
@@ -100,12 +139,32 @@ export default function RootLayout() {
   };
 
   // Show splash screen
-  if (appState === 'splash' || !isLoaded) {
+  if (appState === 'splash' || !isLoaded || !fontsLoaded) {
     return (
       <View style={{ flex: 1 }}>
         <StatusBar style="light" />
         <SplashScreen onComplete={handleSplashComplete} />
       </View>
+    );
+  }
+
+  // Show auth screen
+  if (appState === 'auth') {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <KeyboardProvider>
+          <StatusBar style="light" />
+          <AuthScreen onAuthSuccess={() => {
+            if (!hasAcceptedDisclaimer) {
+              setAppState('disclaimer');
+            } else if (!hasSeenOnboarding) {
+              setAppState('onboarding');
+            } else {
+              setAppState('ready');
+            }
+          }} />
+        </KeyboardProvider>
+      </GestureHandlerRootView>
     );
   }
 
