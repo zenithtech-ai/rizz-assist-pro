@@ -18,11 +18,11 @@ export function TokenCounter() {
   if (planType === 'gold') {
     maxTokens = GOLD_MONTHLY_TOKENS;
     label = 'GOLD';
-    bgColor = '#FFD700'; // Gold color
+    bgColor = '#22C55E'; // Green color
   } else if (planType === 'silver') {
     maxTokens = SILVER_MONTHLY_TOKENS;
     label = 'SILVER';
-    bgColor = '#C0C0C0'; // Silver color
+    bgColor = '#22C55E'; // Green color
   }
 
   const handlePress = () => {
