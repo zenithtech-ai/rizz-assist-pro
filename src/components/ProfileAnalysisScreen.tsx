@@ -218,22 +218,22 @@ function PaywallGate({ onUpgrade }: { onUpgrade: () => void }) {
             Profile Analysis
           </Text>
 
-          <Text className="text-white/60 text-base text-center leading-6 mb-2">
-            Upload dating profile screenshots to get AI-powered insights and personalized opener suggestions.
+          <Text className="text-white/60 text-base text-center leading-6 mb-4">
+            Upload screenshots of their dating profile. I'll break down their energy, their tells, and what actually gets a response. Then I'll hand you openers that feel like you wrote them - sharp, personal, impossible to ignore.
           </Text>
 
           <View className="my-4 w-full">
             <View className="flex-row items-center mb-2">
               <ScanSearch size={18} color={COLORS.neonPink} />
-              <Text className="text-white/80 text-sm ml-2">Analyze their personality & interests</Text>
+              <Text className="text-white/80 text-sm ml-2">Figure out if they're into teasing, flirting, or bold moves</Text>
             </View>
             <View className="flex-row items-center mb-2">
               <Sparkles size={18} color={COLORS.neonPink} />
-              <Text className="text-white/80 text-sm ml-2">Generate tailored openers</Text>
+              <Text className="text-white/80 text-sm ml-2">Get the most effectiive openers tailored to their profile</Text>
             </View>
             <View className="flex-row items-center">
               <User size={18} color={COLORS.neonPink} />
-              <Text className="text-white/80 text-sm ml-2">Get suggested conversation approach</Text>
+              <Text className="text-white/80 text-sm ml-2">Walk away with the perfect conversation plan</Text>
             </View>
           </View>
 
