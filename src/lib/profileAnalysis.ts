@@ -135,7 +135,6 @@ Be specific and based only on what you see in the profile. Make the suggestions 
 }
 
 export async function generateProfileOpeners(
-  base64Images: string[],
   analysis: AnalysisResult
 ): Promise<OpenersResult> {
   if (!OPENAI_API_KEY) {
@@ -145,24 +144,8 @@ export async function generateProfileOpeners(
     };
   }
 
-  if (base64Images.length === 0) {
-    return {
-      openers: [],
-      error: 'No images provided',
-    };
-  }
-
   try {
-    console.log('Generating openers with', base64Images.length, 'images');
-
-    // Build image content blocks for OpenAI
-    const imageContent = base64Images.map(base64 => ({
-      type: 'image_url' as const,
-      image_url: {
-        url: `data:image/jpeg;base64,${base64}`,
-        detail: 'low' as const, // Lower detail for faster processing
-      },
-    }));
+    console.log('Generating openers from analysis');
 
     const analysisContext = `
 Based on this dating profile analysis:
@@ -172,11 +155,11 @@ Based on this dating profile analysis:
 - Suggested Approach: ${analysis.suggestedApproach}
 
 Generate 5 unique, personalized dating openers that:
-1. Reference specific details from the profile photos
+1. Reference the interests and personality traits mentioned
 2. Match their conversation style
 3. Sound natural and genuine (never robotic)
 4. Are short, punchy, and memorable
-5. Show you actually looked at their profile
+5. Show you actually read their profile
 
 Format your response as a numbered list (1-5), one opener per line.
 Just the openers, no explanations.`;
@@ -190,17 +173,11 @@ Just the openers, no explanations.`;
       },
       body: JSON.stringify({
         model: 'gpt-4o',
-        max_tokens: 800,
+        max_tokens: 500,
         messages: [
           {
             role: 'user',
-            content: [
-              ...imageContent,
-              {
-                type: 'text',
-                text: analysisContext,
-              },
-            ],
+            content: analysisContext,
           },
         ],
       }),

@@ -370,7 +370,7 @@ export function ProfileAnalysisScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      const openersResult = await generateProfileOpeners(uploadedImages, analysisResult);
+      const openersResult = await generateProfileOpeners(analysisResult);
       if (openersResult.openers.length > 0) {
         setOpeners(openersResult.openers);
       } else {
@@ -413,7 +413,7 @@ export function ProfileAnalysisScreen() {
     }
 
     try {
-      const openersResult = await generateProfileOpeners(uploadedImages, analysisResult);
+      const openersResult = await generateProfileOpeners(analysisResult);
       if (openersResult.openers.length > 0) {
         setOpeners(openersResult.openers);
       } else {
