@@ -13,9 +13,7 @@ import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import {
   User,
-  Crown,
   Lock,
-  Zap,
   Pencil,
 } from 'lucide-react-native';
 
@@ -67,60 +65,6 @@ export function AccountScreen() {
           contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Current Plan Card */}
-          <Animated.View entering={FadeInDown.delay(100).duration(400)} className="mb-6">
-            <View
-              className="rounded-2xl p-5"
-              style={{
-                backgroundColor: isPaidUser ? 'rgba(255, 105, 180, 0.15)' : 'rgba(255, 255, 255, 0.1)',
-                borderWidth: 1,
-                borderColor: isPaidUser ? 'rgba(255, 105, 180, 0.3)' : 'rgba(255, 255, 255, 0.15)',
-              }}
-            >
-              <View className="flex-row items-center justify-between mb-3">
-                <View className="flex-row items-center">
-                  <Crown size={22} color={isPaidUser ? COLORS.neonPink : 'rgba(255, 255, 255, 0.5)'} />
-                  <Text className="text-white font-bold text-lg ml-2">Current Plan</Text>
-                </View>
-                <View
-                  className="px-3 py-1 rounded-full"
-                  style={{
-                    backgroundColor: isPaidUser ? COLORS.neonPink : 'rgba(255, 255, 255, 0.2)',
-                  }}
-                >
-                  <Text className="text-white font-semibold text-sm">{getPlanLabel()}</Text>
-                </View>
-              </View>
-
-              <Text className="text-white/70 text-base mb-1">
-                {isPaidUser
-                  ? `You have ${tokens} replies remaining this month`
-                  : `You have ${tokens} free replies remaining`}
-              </Text>
-
-              {!isPaidUser && (
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    router.push('/paywall');
-                  }}
-                  className="mt-4 py-3 rounded-xl flex-row items-center justify-center active:opacity-80"
-                  style={{
-                    backgroundColor: COLORS.neonPink,
-                    shadowColor: COLORS.neonPink,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.4,
-                    shadowRadius: 12,
-                    elevation: 6,
-                  }}
-                >
-                  <Zap size={20} color="#FFFFFF" />
-                  <Text className="text-white font-bold text-base ml-2">Upgrade Now</Text>
-                </Pressable>
-              )}
-            </View>
-          </Animated.View>
-
           {/* About Me Section */}
           <Animated.View entering={FadeInDown.delay(200).duration(400)}>
             <View

@@ -112,6 +112,9 @@ export function SettingsScreen() {
           contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 100 }}
           showsVerticalScrollIndicator={false}
         >
+          {/* Current Plan Header */}
+          <Text className="text-white font-bold text-lg mb-3">Current Plan</Text>
+
           {/* Your Plan Card */}
           <View className="bg-white/10 rounded-2xl p-5 mb-6">
             {/* Plan Header */}
