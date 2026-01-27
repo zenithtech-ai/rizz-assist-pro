@@ -418,7 +418,7 @@ export function ProfileAnalysisScreen() {
         <View className="flex-row items-center justify-between px-5 py-3">
           <View className="flex-row items-center">
             <ScanSearch size={22} color={COLORS.neonPink} />
-            <Text className="text-white font-bold text-xl ml-2">Profile Analysis</Text>
+            <Text className="text-white font-bold text-xl ml-2">Profile Analysis & Smart Openers</Text>
           </View>
           <TokenCounter />
         </View>
