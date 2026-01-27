@@ -11,29 +11,25 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { ChevronLeft, User, Pencil, Lock, Zap } from 'lucide-react-native';
+import { ChevronLeft, User, Pencil, Lock, Zap, ChevronRight, Check } from 'lucide-react-native';
 
 import { COLORS } from '@/lib/constants';
-import { usePersonaStore, DatingAppProfile } from '@/lib/personaStore';
+import { usePersonaStore } from '@/lib/personaStore';
 import { useTokenStore } from '@/lib/tokenStore';
-import { DatingAppsEditor } from './DatingAppsEditor';
-import { DatingAppId } from '@/lib/datingAppsKnowledge';
+import { DatingAppId, DATING_APPS } from '@/lib/datingAppsKnowledge';
 
 export function MyVibeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const params = useLocalSearchParams();
 
   const loadState = usePersonaStore((s) => s.loadState);
   const savedAboutMe = usePersonaStore((s) => s.aboutMe);
   const saveAboutMe = usePersonaStore((s) => s.setAboutMe);
   const isLoaded = usePersonaStore((s) => s.isLoaded);
   const datingAppProfiles = usePersonaStore((s) => s.datingAppProfiles);
-  const setDatingAppProfile = usePersonaStore((s) => s.setDatingAppProfile);
-  const deleteDatingAppProfile = usePersonaStore((s) => s.deleteDatingAppProfile);
 
   // Check if user has a paid plan (silver or gold)
   const planType = useTokenStore((s) => s.planType);
@@ -42,9 +38,6 @@ export function MyVibeScreen() {
   // Local state for editing
   const [aboutMe, setAboutMe] = useState(savedAboutMe);
   const [isSaving, setIsSaving] = useState(false);
-  const [expandedAppId, setExpandedAppId] = useState<DatingAppId | null>(
-    (params?.appId as DatingAppId) || null
-  );
 
   useEffect(() => {
     loadState();
@@ -67,12 +60,9 @@ export function MyVibeScreen() {
     router.back();
   };
 
-  const handleDatingAppProfileSave = async (appId: DatingAppId, fields: Record<string, string>) => {
-    await setDatingAppProfile(appId, fields);
-  };
-
-  const handleDatingAppProfileDelete = async (appId: DatingAppId) => {
-    await deleteDatingAppProfile(appId);
+  const handleNavigateToDatingApp = (appId: DatingAppId) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push({ pathname: '/dating-app-detail', params: { appId } });
   };
 
   const hasChanges = aboutMe !== savedAboutMe;
@@ -110,13 +100,53 @@ export function MyVibeScreen() {
             {/* Dating Apps Section - PRO Feature */}
             {isPaidUser && (
               <Animated.View entering={FadeInDown.duration(300)} className="mb-8">
-                <DatingAppsEditor
-                  onProfileSave={handleDatingAppProfileSave}
-                  onProfileDelete={handleDatingAppProfileDelete}
-                  savedProfiles={datingAppProfiles}
-                  aboutMe={aboutMe}
-                  autoExpandAppId={expandedAppId}
-                />
+                <View className="mb-3">
+                  <Text className="text-white font-bold text-lg mb-1">Dating App Profiles</Text>
+                  <Text className="text-white/60 text-sm mb-4">
+                    Optimize your profiles for each dating app with AI-powered suggestions
+                  </Text>
+                </View>
+
+                {/* Dating Apps Grid */}
+                <View className="gap-2">
+                  {DATING_APPS.map(app => {
+                    const hasSaved = !!datingAppProfiles[app.id];
+                    return (
+                      <Pressable
+                        key={app.id}
+                        onPress={() => handleNavigateToDatingApp(app.id)}
+                        className="active:opacity-70"
+                      >
+                        <View
+                          className="rounded-xl p-4 flex-row items-center justify-between"
+                          style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                            borderWidth: 1,
+                            borderColor: hasSaved
+                              ? 'rgba(255, 105, 180, 0.4)'
+                              : 'rgba(255, 255, 255, 0.15)',
+                          }}
+                        >
+                          <View className="flex-row items-center flex-1">
+                            <Text className="text-2xl mr-3">{app.emoji}</Text>
+                            <View className="flex-1">
+                              <Text className="text-white font-bold text-base">{app.label}</Text>
+                              {hasSaved && (
+                                <Text className="text-white/50 text-xs mt-1">Profile saved</Text>
+                              )}
+                            </View>
+                          </View>
+                          <View className="flex-row items-center gap-2">
+                            {hasSaved && (
+                              <Check size={18} color={COLORS.neonPink} />
+                            )}
+                            <ChevronRight size={20} color="rgba(255, 255, 255, 0.5)" />
+                          </View>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </View>
               </Animated.View>
             )}
 

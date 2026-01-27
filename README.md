@@ -45,6 +45,7 @@ src/
 │   ├── _layout.tsx      # Root layout with app flow
 │   ├── paywall.tsx      # Subscription paywall modal
 │   ├── my-vibe.tsx      # My Vibe & Profile screen
+│   ├── dating-app-detail.tsx  # Dating app detail screen (focused single app)
 │   └── (tabs)/
 │       ├── _layout.tsx         # Tab navigation (5 tabs)
 │       ├── index.tsx           # Home tab (hero welcome screen)
@@ -60,8 +61,8 @@ src/
 │   ├── ProfileAnalysisScreen.tsx
 │   ├── AccountScreen.tsx
 │   ├── SettingsScreen.tsx
-│   ├── MyVibeScreen.tsx        # Persona & profile editor + dating app profiles
-│   ├── DatingAppsEditor.tsx    # Dating apps profile selector & editor
+│   ├── MyVibeScreen.tsx        # Persona & profile editor (list of dating apps)
+│   ├── DatingAppsEditor.tsx    # Dating apps profile editor (used on detail screen)
 │   ├── TokenCounter.tsx
 │   ├── StyleButton.tsx
 │   ├── ReplyBubble.tsx
@@ -81,30 +82,17 @@ src/
 
 ## Dating App Profile Optimizer (PRO Feature)
 
-The app includes a powerful **Dating App Profile Optimizer** that helps users optimize their profiles for 8 popular dating apps using AI-powered suggestions. Profiles are displayed as expandable cards that you can edit inline.
+The app includes a powerful **Dating App Profile Optimizer** that helps users optimize their profiles for 8 popular dating apps using AI-powered suggestions.
 
-### Supported Dating Apps
+### How It Works Now
 
-1. **Tinder** - Short, punchy, witty bios with personality
-2. **Bumble** - Confident headline + full bio + first date idea
-3. **Hinge** - Detailed prompts about yourself + date ideas
-4. **Facebook Dating** - About section + lifestyle info
-5. **Match** - Comprehensive about me + what you're looking for
-6. **eHarmony** - Essay-style profiles focused on values
-7. **OkCupid** - Detailed sections with personality + interests
-8. **Instagram** - Ultra-short bio optimized for discovery
-
-### How It Works
-
-1. **View Dating Apps**: All 8 apps shown as expandable cards in Personalization > My Profile
-2. **Expand & Edit**: Tap any app to expand and edit profile fields inline (✓ shows if saved)
-3. **Get AI Suggestions**: Click "Optimize" to receive:
-   - App-specific improvement suggestions
-   - Before/after comparisons
-   - Explanation of why each change helps
-   - Character limit enforcement (visual warnings)
-4. **Apply & Save**: Apply suggestions directly to fields, then click Save to store profile locally
-5. **Delete Profile**: For saved profiles, click the delete button (trash icon) to clear all text in that profile
+1. **View Dating Apps List**: In the My Profile tab, paid users see a list of 8 dating apps with navigation
+2. **Click an App**: Tap any app to navigate to a dedicated detail screen showing ONLY that app
+3. **Expand & Edit**: The app auto-expands on the detail screen with all profile fields ready to edit
+4. **Get AI Suggestions**: Click "Optimize" to receive app-specific improvement suggestions
+5. **Apply & Save**: Apply suggestions and click Save to store profile locally
+6. **Delete Profile**: Click the delete button (trash icon) to clear all text in that profile
+7. **Back Button**: Use the back button to return to the apps list
 
 ### AI Optimization Features
 
