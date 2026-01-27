@@ -1,8 +1,8 @@
 // Profile Analysis Service for Dating Profile Screenshots
-// Uses Claude API for AI-powered analysis
+// Uses OpenAI API for AI-powered analysis
 
-const ANTHROPIC_API_KEY = process.env.EXPO_PUBLIC_VIBECODE_ANTHROPIC_API_KEY;
-const ANTHROPIC_ENDPOINT = 'https://api.anthropic.com/v1/messages';
+const OPENAI_API_KEY = process.env.EXPO_PUBLIC_VIBECODE_OPENAI_API_KEY;
+const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 
 export interface AnalysisResult {
   personality: string;
@@ -15,13 +15,13 @@ export interface AnalysisResult {
 export async function analyzeProfileScreenshots(
   base64Images: string[]
 ): Promise<AnalysisResult> {
-  if (!ANTHROPIC_API_KEY) {
+  if (!OPENAI_API_KEY) {
     return {
       personality: '',
       interests: [],
       conversationStyle: '',
       suggestedApproach: '',
-      error: 'Anthropic API key not configured',
+      error: 'OpenAI API key not configured',
     };
   }
 
@@ -36,25 +36,22 @@ export async function analyzeProfileScreenshots(
   }
 
   try {
-    // Build image content blocks
+    // Build image content blocks for OpenAI
     const imageContent = base64Images.map(base64 => ({
-      type: 'image' as const,
-      source: {
-        type: 'base64' as const,
-        media_type: 'image/jpeg' as const,
-        data: base64,
+      type: 'image_url' as const,
+      image_url: {
+        url: `data:image/jpeg;base64,${base64}`,
       },
     }));
 
-    const response = await fetch(ANTHROPIC_ENDPOINT, {
+    const response = await fetch(OPENAI_ENDPOINT, {
       method: 'POST',
       headers: {
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'gpt-4o',
         max_tokens: 1024,
         messages: [
           {
@@ -81,7 +78,7 @@ Be specific and based only on what you see in the profile. Make the suggestions 
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('Anthropic API error:', errorData);
+      console.error('OpenAI API error:', errorData);
       return {
         personality: '',
         interests: [],
@@ -92,7 +89,7 @@ Be specific and based only on what you see in the profile. Make the suggestions 
     }
 
     const data = await response.json();
-    const content = data.content?.[0]?.text || '';
+    const content = data.choices?.[0]?.message?.content || '';
 
     // Parse JSON from response
     const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -125,3 +122,4 @@ Be specific and based only on what you see in the profile. Make the suggestions 
     };
   }
 }
+
