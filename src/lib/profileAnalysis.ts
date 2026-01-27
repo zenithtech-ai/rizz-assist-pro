@@ -204,7 +204,10 @@ Just the openers, no explanations.`;
       .filter((line: string) => line.length > 0)
       .map((line: string) => {
         // Remove numbering like "1.", "1)", "- ", etc
-        return line.replace(/^[\d]+[.)\-]\s*/, '').replace(/^[-•]\s*/, '').trim();
+        let cleaned = line.replace(/^[\d]+[.)\-]\s*/, '').replace(/^[-•]\s*/, '').trim();
+        // Remove surrounding quotes if present
+        cleaned = cleaned.replace(/^["']|["']$/g, '');
+        return cleaned;
       })
       .filter((line: string) => line.length > 0)
       .slice(0, 5);
