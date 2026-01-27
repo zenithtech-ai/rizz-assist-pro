@@ -322,13 +322,15 @@ export function SettingsScreen() {
               </Pressable>
             )}
 
-            <Pressable
-              onPress={handleContactSupport}
-              className="bg-white/10 rounded-2xl p-4 flex-row items-center active:opacity-80"
-            >
-              <Mail size={20} color="rgba(255, 255, 255, 0.7)" />
-              <Text className="text-white font-medium ml-3">Contact Support</Text>
-            </Pressable>
+            {isPaid && (
+              <Pressable
+                onPress={handleContactSupport}
+                className="bg-white/10 rounded-2xl p-4 flex-row items-center active:opacity-80"
+              >
+                <Mail size={20} color="rgba(255, 255, 255, 0.7)" />
+                <Text className="text-white font-medium ml-3">Contact Support</Text>
+              </Pressable>
+            )}
           </View>
 
           {/* Legal */}
