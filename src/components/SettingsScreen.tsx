@@ -322,15 +322,21 @@ export function SettingsScreen() {
               </Pressable>
             )}
 
-            {isPaid && (
-              <Pressable
-                onPress={handleContactSupport}
-                className="bg-white/10 rounded-2xl p-4 flex-row items-center active:opacity-80"
-              >
-                <Mail size={20} color="rgba(255, 255, 255, 0.7)" />
-                <Text className="text-white font-medium ml-3">Contact Support</Text>
-              </Pressable>
-            )}
+            <Pressable
+              onPress={isPaid ? handleContactSupport : undefined}
+              disabled={!isPaid}
+              className={`bg-white/10 rounded-2xl p-4 flex-row items-center ${isPaid ? 'active:opacity-80' : 'opacity-60'}`}
+            >
+              <Mail size={20} color={isPaid ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.4)'} />
+              <View className="flex-1 ml-3">
+                <Text className={`font-medium ${isPaid ? 'text-white' : 'text-white/50'}`}>
+                  Contact Support
+                </Text>
+                {!isPaid && (
+                  <Text className="text-white/40 text-xs mt-1">Available for paid users only</Text>
+                )}
+              </View>
+            </Pressable>
           </View>
 
           {/* Legal */}
