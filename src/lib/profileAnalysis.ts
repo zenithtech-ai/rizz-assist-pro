@@ -155,11 +155,21 @@ Based on this dating profile analysis:
 - Suggested Approach: ${analysis.suggestedApproach}
 
 Generate 5 unique, personalized dating openers that:
-1. Reference the interests and personality traits mentioned
-2. Match their conversation style
-3. Sound natural and genuine (never robotic)
-4. Are short, punchy, and memorable
-5. Show you actually read their profile
+1. Are direct conversation starters about their actual interests/profile
+2. Show you read their profile, not generic questions
+3. Have personality - flirty, confident, or witty (never boring)
+4. Are short and punchy (1-2 sentences max)
+5. Actually reference something specific about them
+
+Examples of GOOD openers:
+- "ok but why does everyone pretend hiking is fun when you could just drink coffee on a couch"
+- "noticed you're into travel - what's one place you'd go back to in a heartbeat"
+- "your vibe gives main character energy and I'm here for it"
+
+Examples of BAD openers:
+- "What's the most serendipitous discovery you've made while exploring a new place?"
+- "Have any of your travels sparked a new art project lately?"
+- Generic small talk questions
 
 Format your response as a numbered list (1-5), one opener per line.
 Just the openers, no explanations.`;
