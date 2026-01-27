@@ -1,6 +1,8 @@
 // Profile Analysis Service for Dating Profile Screenshots
 // Uses OpenAI API for AI-powered analysis
 
+import { logApiCall } from './apiLogger';
+
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_VIBECODE_OPENAI_API_KEY;
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 
@@ -116,6 +118,11 @@ Be specific and based only on what you see in the profile. Make the suggestions 
 
     const analysis = JSON.parse(jsonMatch[0]);
 
+    // Log successful API call
+    const inputTokens = data.usage?.prompt_tokens;
+    const outputTokens = data.usage?.completion_tokens;
+    logApiCall('profile_analysis', inputTokens, outputTokens, true);
+
     return {
       personality: analysis.personality || '',
       interests: Array.isArray(analysis.interests) ? analysis.interests : [],
@@ -124,6 +131,10 @@ Be specific and based only on what you see in the profile. Make the suggestions 
     };
   } catch (error) {
     console.error('Error analyzing profile:', error);
+
+    // Log failed API call
+    logApiCall('profile_analysis', undefined, undefined, false, error instanceof Error ? error.message : 'Unknown error');
+
     return {
       personality: '',
       interests: [],
@@ -240,9 +251,18 @@ Just the openers, no explanations.`;
       };
     }
 
+    // Log successful API call
+    const inputTokens = data.usage?.prompt_tokens;
+    const outputTokens = data.usage?.completion_tokens;
+    logApiCall('opener_generation', inputTokens, outputTokens, true);
+
     return { openers };
   } catch (error) {
     console.error('Error generating openers:', error);
+
+    // Log failed API call
+    logApiCall('opener_generation', undefined, undefined, false, error instanceof Error ? error.message : 'Unknown error');
+
     return {
       openers: [],
       error: error instanceof Error ? error.message : 'Unknown error occurred',

@@ -1,5 +1,6 @@
 // Profile Optimizer - Uses OpenAI to improve dating app profiles
 import { DatingAppId, APP_PROFILE_FIELDS, APP_BEST_PRACTICES } from './datingAppsKnowledge';
+import { logApiCall } from './apiLogger';
 
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_VIBECODE_OPENAI_API_KEY;
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
@@ -165,6 +166,11 @@ RESPOND WITH JSON ONLY (no other text):
       }
     }
 
+    // Log successful API call
+    const inputTokens = data.usage?.prompt_tokens;
+    const outputTokens = data.usage?.completion_tokens;
+    logApiCall('profile_optimization', inputTokens, outputTokens, true);
+
     return {
       optimizedFields: validatedFields,
       tips: Array.isArray(parsed.tips) ? parsed.tips : [],
@@ -172,6 +178,10 @@ RESPOND WITH JSON ONLY (no other text):
     };
   } catch (error) {
     console.error('Error optimizing profile:', error);
+
+    // Log failed API call
+    logApiCall('profile_optimization', undefined, undefined, false, error instanceof Error ? error.message : 'Unknown error');
+
     return {
       optimizedFields: {},
       tips: [],

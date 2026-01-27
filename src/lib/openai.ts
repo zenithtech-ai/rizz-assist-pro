@@ -1,6 +1,8 @@
 // OpenAI API Service for Rizz Assist Pro
 // With persona injection and prompt caching optimization
 
+import { logApiCall } from './apiLogger';
+
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_VIBECODE_OPENAI_API_KEY;
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 
@@ -202,9 +204,20 @@ export async function generateReplies({
       };
     }
 
+    // Log successful API call
+    const featureType = hasImage ? 'screenshot_reply' : 'reply_generation';
+    const inputTokens = data.usage?.prompt_tokens;
+    const outputTokens = data.usage?.completion_tokens;
+    logApiCall(featureType, inputTokens, outputTokens, true);
+
     return { replies, extractedText };
   } catch (error) {
     console.error('Error generating replies:', error);
+
+    // Log failed API call
+    const featureType = hasImage ? 'screenshot_reply' : 'reply_generation';
+    logApiCall(featureType, undefined, undefined, false, error instanceof Error ? error.message : 'Unknown error');
+
     return {
       replies: [],
       error: error instanceof Error ? error.message : 'Unknown error occurred',
