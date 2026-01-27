@@ -434,30 +434,6 @@ export default function ReplyGeneratorPage() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* Generated Replies with Teaser Card */}
-            {generatedReplies.length > 0 && (
-              <Animated.View entering={FadeIn}>
-                {/* Teaser card for non-paid users without About Me */}
-                {!isPaidUser && (
-                  <AboutMeTeaserCard
-                    onUpgrade={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      router.push('/my-vibe');
-                    }}
-                  />
-                )}
-
-                <Text className="text-white font-bold text-lg mb-3">
-                  Tap to copy
-                </Text>
-                {generatedReplies.map((reply, index) => (
-                  <ReplyBubble key={index} text={reply} index={index} />
-                ))}
-
-                <View className="h-6" />
-              </Animated.View>
-            )}
-
             {/* Message Input with Image Button */}
             <View className="mb-5">
               <Text className="text-white/50 text-xs mb-2 ml-1">
@@ -632,6 +608,47 @@ export default function ReplyGeneratorPage() {
                 </Pressable>
               </Animated.View>
             </View>
+
+            {/* Generated Replies with Teaser Card - Displayed Below Generate Button */}
+            {generatedReplies.length > 0 && (
+              <Animated.View entering={FadeIn} className="mt-8">
+                {/* Teaser card for non-paid users without About Me */}
+                {!isPaidUser && (
+                  <AboutMeTeaserCard
+                    onUpgrade={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      router.push('/my-vibe');
+                    }}
+                  />
+                )}
+
+                <Text className="text-white font-bold text-lg mb-3">
+                  Tap to copy
+                </Text>
+                {generatedReplies.map((reply, index) => (
+                  <ReplyBubble key={index} text={reply} index={index} />
+                ))}
+
+                {/* Regenerate Button */}
+                <View className="mt-4 mb-6">
+                  <Pressable
+                    onPress={handleGenerate}
+                    disabled={isGenerating}
+                    className="py-3 px-4 rounded-xl flex-row items-center justify-center active:opacity-80"
+                    style={{
+                      backgroundColor: 'rgba(255, 105, 180, 0.2)',
+                      borderWidth: 1.5,
+                      borderColor: COLORS.neonPink,
+                    }}
+                  >
+                    <Sparkles size={18} color={COLORS.neonPink} />
+                    <Text className="text-white font-semibold text-base ml-2">
+                      Regenerate
+                    </Text>
+                  </Pressable>
+                </View>
+              </Animated.View>
+            )}
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
