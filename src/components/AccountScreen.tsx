@@ -17,12 +17,14 @@ import {
   Pencil,
   Crown,
   Star,
+  ExternalLink,
 } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
 import { COLORS } from '@/lib/constants';
 import { useTokenStore } from '@/lib/tokenStore';
 import { usePersonaStore } from '@/lib/personaStore';
+import { DATING_APPS } from '@/lib/datingAppsKnowledge';
 
 export function AccountScreen() {
   const insets = useSafeAreaInsets();
@@ -33,6 +35,7 @@ export function AccountScreen() {
   const isPaidUser = planType === 'silver' || planType === 'gold';
 
   const aboutMe = usePersonaStore((s) => s.aboutMe);
+  const datingAppProfiles = usePersonaStore((s) => s.datingAppProfiles);
 
   const getPlanLabel = () => {
     switch (planType) {
@@ -164,6 +167,66 @@ export function AccountScreen() {
               )}
             </View>
           </Animated.View>
+
+          {/* Dating Apps Section - PRO Feature */}
+          {isPaidUser && (
+            <Animated.View entering={FadeInDown.delay(300).duration(400)} className="mt-6">
+              <View className="flex-row items-center mb-4">
+                <ExternalLink size={22} color={COLORS.neonPink} />
+                <Text className="text-white font-bold text-lg ml-2">Dating App Profiles</Text>
+              </View>
+
+              <View className="flex-row flex-wrap">
+                {DATING_APPS.map((app) => {
+                  const profile = datingAppProfiles[app.id];
+                  const hasProfile = profile && Object.values(profile).some(v => v?.trim());
+
+                  return (
+                    <Pressable
+                      key={app.id}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        router.push('/my-vibe');
+                      }}
+                      className="mb-3 mr-3 active:opacity-70"
+                    >
+                      <View
+                        className="px-4 py-3 rounded-xl flex-row items-center"
+                        style={{
+                          backgroundColor: hasProfile
+                            ? 'rgba(255, 105, 180, 0.2)'
+                            : 'rgba(255, 255, 255, 0.08)',
+                          borderWidth: 1,
+                          borderColor: hasProfile
+                            ? COLORS.neonPink
+                            : 'rgba(255, 255, 255, 0.15)',
+                        }}
+                      >
+                        <Text className="mr-2">{app.emoji}</Text>
+                        <Text
+                          className="text-sm font-medium"
+                          style={{
+                            color: hasProfile ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
+                          }}
+                        >
+                          {app.label}
+                        </Text>
+                        {hasProfile && (
+                          <View className="ml-1">
+                            <Text style={{ color: COLORS.neonPink }}>✓</Text>
+                          </View>
+                        )}
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Text className="text-white/50 text-xs mt-3 ml-1">
+                Tap any app to add or edit your profile
+              </Text>
+            </Animated.View>
+          )}
         </ScrollView>
       </LinearGradient>
     </View>
