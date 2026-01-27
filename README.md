@@ -17,11 +17,19 @@ AI-powered dating assistant app that generates contextual reply suggestions base
   - Optimized profiles with tips for each app
 - **Profile Analysis**: Upload dating profile screenshots to analyze and generate tailored openers
 - **Screenshot Analysis**: Upload conversation screenshots for AI to read and respond to (Silver & Gold only)
-- **Token System**: Free users get 3 replies/day, Silver gets 1,500/month, Gold gets 3,000/month
+- **Token System**: Free users get 3 tokens per day, Silver gets 1,000 tokens/month, Gold gets 2,000 tokens/month
+- **Token Costs**:
+  - Reply generation (text): 1 token (~$0.008)
+  - Reply generation (screenshot): 2 tokens (~$0.015)
+  - Profile analysis: 3 tokens (~$0.04)
+  - Opener generation: 1 token (~$0.008)
+  - Profile optimization: 2 tokens (~$0.015)
 - **Subscription Plans**:
-  - Free: 3 replies/day, no screenshot analysis, no dating app profiles
-  - Silver: $9.95/month, 1,500 replies/month, screenshot analysis + dating app profiles
-  - Gold: $17.95/month, 3,000 replies/month, screenshot analysis + dating app profiles
+  - Free: 3 tokens per day, no screenshot analysis, no dating app profiles
+  - Silver: $9.95/month, 1,000 tokens/month, screenshot analysis + dating app profiles
+  - Gold: $17.95/month, 2,000 tokens/month, screenshot analysis + dating app profiles
+- **Authentication**: Email/password signup with Supabase auth
+- **Cost Tracking**: All API calls logged to Supabase for admin analytics
 - **Dark Mode**: Beautiful purple-to-pink gradient design
 
 ## App Flow
@@ -77,6 +85,9 @@ src/
     ├── stylePromptBuilder.ts       # Tone + action instruction builder
     ├── tokenStore.ts               # Zustand store for tokens/subscription
     ├── personaStore.ts             # Zustand store for personas, about me, dating app profiles
+    ├── authStore.ts                # Zustand store for user authentication
+    ├── supabase.ts                 # Supabase client initialization
+    ├── apiLogger.ts                # API call logging to Supabase
     └── cn.ts                       # Tailwind class merger
 ```
 
@@ -207,3 +218,24 @@ The system prompt is structured for OpenAI prompt caching:
 - Disclaimer shown on first launch
 - Contact: contact@rizzassist.pro
 - Governing Law: New South Wales, Australia
+
+## Admin Dashboard
+
+A separate **Next.js admin dashboard** for managing users, costs, and analytics:
+
+- **Live User Analytics**: View all users, plans, and usage statistics
+- **Cost Tracking**: Daily/weekly/monthly OpenAI spending with charts
+- **API Analytics**: Track which features are most popular
+- **User Management**: Search and filter users by plan/activity
+- **Real-time Dashboard**: Synced with Supabase for live data
+
+### Setup Instructions
+
+See `ADMIN_DASHBOARD_SETUP.md` for complete deployment instructions.
+
+**Quick Summary:**
+1. Create GitHub repo for admin dashboard
+2. Copy Next.js files (instructions in `ADMIN_DASHBOARD_SETUP.md`)
+3. Add Supabase environment variables
+4. Deploy to Vercel with one click
+5. Access at `https://your-admin-dashboard.vercel.app`

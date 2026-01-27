@@ -75,7 +75,8 @@ export default function PaywallScreen() {
       name: 'Free',
       price: '$0',
       period: '',
-      replies: `${FREE_DAILY_LIMIT} replies/day`,
+      description: '3 tokens per day',
+      tokens: FREE_DAILY_LIMIT,
       screenshot: false,
       highlight: false,
     },
@@ -84,7 +85,8 @@ export default function PaywallScreen() {
       name: 'Silver',
       price: SUBSCRIPTION_PRODUCTS.silver.price,
       period: '/month',
-      replies: `${SILVER_MONTHLY_TOKENS.toLocaleString()} replies/month`,
+      description: '1000 tokens a month',
+      tokens: SILVER_MONTHLY_TOKENS,
       screenshot: true,
       highlight: false,
     },
@@ -93,7 +95,8 @@ export default function PaywallScreen() {
       name: 'Gold',
       price: SUBSCRIPTION_PRODUCTS.gold.price,
       period: '/month',
-      replies: `${GOLD_MONTHLY_TOKENS.toLocaleString()} replies/month`,
+      description: '2000 tokens a month',
+      tokens: GOLD_MONTHLY_TOKENS,
       screenshot: true,
       highlight: true,
       badge: 'BEST VALUE',
@@ -194,7 +197,7 @@ export default function PaywallScreen() {
                   <View className="mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' }}>
                     <View className="flex-row items-center mb-2">
                       <Check size={14} color={COLORS.tokenPro} />
-                      <Text className="text-white/80 text-sm ml-2">{plan.replies}</Text>
+                      <Text className="text-white/80 text-sm ml-2">{plan.description}</Text>
                     </View>
                     <View className="flex-row items-center">
                       {plan.screenshot ? (
