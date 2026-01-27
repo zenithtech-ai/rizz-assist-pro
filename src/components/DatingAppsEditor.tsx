@@ -165,14 +165,18 @@ export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
+      // Call the parent's save function with the current field values
       await onProfileSave(appId, state.fieldValues);
+      console.log('Profile saved successfully for', appId);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
       // Only collapse if not in single app mode
       if (!singleAppMode) {
         const newExpanded = new Set(expandedApps);
         newExpanded.delete(appId);
         setExpandedApps(newExpanded);
       }
+
       // Reset optimization state
       setAppStates(prev => ({
         ...prev,

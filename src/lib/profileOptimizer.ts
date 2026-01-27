@@ -97,6 +97,8 @@ RESPOND WITH JSON ONLY (no other text):
   "tips": ["app-specific tip 1", "app-specific tip 2", "app-specific tip 3"]
 }`;
 
+    console.log('Starting profile optimization for', appId);
+
     const response = await fetch(OPENAI_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -116,14 +118,22 @@ RESPOND WITH JSON ONLY (no other text):
       }),
     });
 
+    console.log('OpenAI response status:', response.status);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('OpenAI API error:', errorData);
+      let errorMessage = `API request failed: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        console.error('OpenAI API error details:', errorData);
+        errorMessage = errorData?.error?.message || errorMessage;
+      } catch (e) {
+        console.error('Could not parse error response:', e);
+      }
       return {
         optimizedFields: {},
         tips: [],
         improvements: [],
-        error: `API request failed: ${response.status}`,
+        error: errorMessage,
       };
     }
 

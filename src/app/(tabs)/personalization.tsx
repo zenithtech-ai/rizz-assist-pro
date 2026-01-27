@@ -1,7 +1,7 @@
-// Rizz Assist Pro - Account Tab
+// Rizz Assist Pro - Personalization Tab
 import React from 'react';
 import { AccountScreen } from '@/components/AccountScreen';
 
-export default function AccountTab() {
+export default function PersonalizationTab() {
   return <AccountScreen />;
 }

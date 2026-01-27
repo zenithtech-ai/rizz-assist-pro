@@ -17,7 +17,7 @@ import { ChevronLeft } from 'lucide-react-native';
 
 import { COLORS } from '@/lib/constants';
 import { usePersonaStore } from '@/lib/personaStore';
-import { DatingAppId } from '@/lib/datingAppsKnowledge';
+import { DatingAppId, DATING_APPS } from '@/lib/datingAppsKnowledge';
 import { DatingAppsEditor } from '@/components/DatingAppsEditor';
 
 export default function DatingAppDetailScreen() {
@@ -26,15 +26,18 @@ export default function DatingAppDetailScreen() {
   const params = useLocalSearchParams();
 
   const appId = (params?.appId as DatingAppId) || null;
+  const appName = appId ? DATING_APPS.find(app => app.id === appId)?.label : '';
   const aboutMe = usePersonaStore((s) => s.aboutMe);
   const datingAppProfiles = usePersonaStore((s) => s.datingAppProfiles);
   const setDatingAppProfile = usePersonaStore((s) => s.setDatingAppProfile);
   const deleteDatingAppProfile = usePersonaStore((s) => s.deleteDatingAppProfile);
   const loadState = usePersonaStore((s) => s.loadState);
+  const loadDatingAppProfiles = usePersonaStore((s) => s.loadDatingAppProfiles);
 
   useEffect(() => {
     loadState();
-  }, []);
+    loadDatingAppProfiles();
+  }, [loadState, loadDatingAppProfiles]);
 
   const handleDatingAppProfileSave = async (appId: DatingAppId, fields: Record<string, string>) => {
     await setDatingAppProfile(appId, fields);
@@ -64,7 +67,7 @@ export default function DatingAppDetailScreen() {
             >
               <ChevronLeft size={28} color="#FFFFFF" />
             </Pressable>
-            <Text className="text-white text-xl font-bold flex-1 text-center">Back</Text>
+            <Text className="text-white text-xl font-bold flex-1 text-center">Your {appName} Profile</Text>
             <View style={{ width: 44 }} />
           </View>
 
