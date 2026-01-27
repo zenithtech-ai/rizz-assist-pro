@@ -93,7 +93,7 @@ export default function HomeScreen() {
             </Animated.View>
 
             {/* Secondary Link */}
-            <Animated.View entering={FadeInUp.delay(550).duration(600)} className="mt-4">
+            <Animated.View entering={FadeInUp.delay(550).duration(600)} className="mt-4" style={{ width: '100%' }}>
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
