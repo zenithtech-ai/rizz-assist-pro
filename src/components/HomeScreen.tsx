@@ -99,7 +99,7 @@ export default function HomeScreen() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   router.push('/my-vibe');
                 }}
-                className="items-center justify-center active:opacity-70"
+                className="items-center justify-center active:opacity-70 py-4"
               >
                 <Text className="text-white/50 text-sm">
                   Set up your profile
