@@ -1,6 +1,6 @@
 // Rizz Assist Pro - Home Tab
 import React from 'react';
-import { HomeScreen } from '@/components/HomeScreen';
+import HomeScreen from '@/components/HomeScreen';
 
 export default function HomeTab() {
   return <HomeScreen />;

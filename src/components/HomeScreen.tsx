@@ -21,7 +21,7 @@ import {
 import { TokenCounter } from '@/components/TokenCounter';
 import { COLORS } from '@/lib/constants';
 
-export function HomeScreen() {
+export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -120,5 +120,3 @@ export function HomeScreen() {
     </View>
   );
 }
-
-export default HomeScreen;
