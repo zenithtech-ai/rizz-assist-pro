@@ -41,22 +41,14 @@ import {
 } from '@/lib/constants';
 import { useTokenStore } from '@/lib/tokenStore';
 import { generateReplies as generateAIReplies } from '@/lib/openai';
+import { analyzeProfileScreenshots } from '@/lib/profileAnalysis';
 
 interface AnalysisResult {
   personality: string;
   interests: string[];
   conversationStyle: string;
   suggestedApproach: string;
-}
-
-// Mock analysis function (replace with AI when ready)
-function analyzeProfile(imageCount: number): AnalysisResult {
-  return {
-    personality: 'Confident, adventurous, values humor and authenticity',
-    interests: ['Travel', 'Fitness', 'Coffee culture', 'Live music'],
-    conversationStyle: 'Playful banter with substance',
-    suggestedApproach: 'Lead with wit, reference shared interests, keep it light but genuine',
-  };
+  error?: string;
 }
 
 // Mock openers based on analysis
@@ -336,12 +328,33 @@ export function ProfileAnalysisScreen() {
     setIsAnalyzing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Simulate analysis delay (replace with actual AI call)
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const result = await analyzeProfileScreenshots(images);
 
-    const result = analyzeProfile(images.length);
-    setAnalysisResult(result);
-    setIsAnalyzing(false);
+      if (result.error) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        setAnalysisResult({
+          personality: 'Error analyzing profile',
+          interests: [],
+          conversationStyle: 'Please try again',
+          suggestedApproach: result.error,
+          error: result.error,
+        });
+      } else {
+        setAnalysisResult(result);
+      }
+    } catch (error) {
+      console.error('Analysis error:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setAnalysisResult({
+        personality: 'Error analyzing profile',
+        interests: [],
+        conversationStyle: 'Please try again',
+        suggestedApproach: 'An unexpected error occurred',
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleGenerateFromAnalysis = async () => {
