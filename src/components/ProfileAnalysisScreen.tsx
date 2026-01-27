@@ -293,7 +293,7 @@ export function ProfileAnalysisScreen() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: true,
         selectionLimit: 5,
-        quality: 0.7,
+        quality: 0.5, // Reduced quality for faster processing
         base64: true,
       });
 
@@ -334,22 +334,8 @@ export function ProfileAnalysisScreen() {
           error: result.error,
         });
       } else {
-        console.log('Analysis successful, setting result and generating openers');
+        console.log('Analysis successful');
         setAnalysisResult(result);
-
-        // Auto-generate openers after successful analysis
-        setIsGeneratingOpeners(true);
-        console.log('Generating openers...');
-        const openersResult = await generateProfileOpeners(images, result);
-        console.log('Openers result:', openersResult);
-
-        if (!openersResult.error && openersResult.openers.length > 0) {
-          console.log('Setting openers:', openersResult.openers);
-          setOpeners(openersResult.openers);
-        } else {
-          console.log('No openers generated or error:', openersResult.error);
-        }
-        setIsGeneratingOpeners(false);
       }
     } catch (error) {
       console.error('Analysis error:', error);
