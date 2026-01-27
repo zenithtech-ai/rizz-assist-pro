@@ -26,6 +26,7 @@ interface DatingAppsEditorProps {
   savedProfiles: Partial<Record<DatingAppId, { appId: DatingAppId; fieldValues: Record<string, string> }>>;
   aboutMe: string;
   autoExpandAppId?: DatingAppId | null;
+  hideHeader?: boolean;
 }
 
 interface AppEditState {
@@ -36,7 +37,7 @@ interface AppEditState {
   isSaving: boolean;
 }
 
-export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles, aboutMe, autoExpandAppId }: DatingAppsEditorProps) {
+export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles, aboutMe, autoExpandAppId, hideHeader }: DatingAppsEditorProps) {
   const [expandedApps, setExpandedApps] = useState<Set<DatingAppId>>(
     autoExpandAppId ? new Set([autoExpandAppId]) : new Set()
   );
@@ -202,10 +203,24 @@ export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles
 
   return (
     <View className="mb-6">
-      <Text className="text-white font-bold text-lg mb-3">Dating Apps Profiles</Text>
-      <Text className="text-white/60 text-sm mb-4">
-        Optimize your profiles for each dating app with AI-powered suggestions
-      </Text>
+      {!hideHeader && autoExpandAppId && (
+        <>
+          <Text className="text-white font-bold text-lg mb-3">
+            Your {DATING_APPS.find(app => app.id === autoExpandAppId)?.label} Profile
+          </Text>
+          <Text className="text-white/60 text-sm mb-4">
+            Optimize your {DATING_APPS.find(app => app.id === autoExpandAppId)?.label} profile with AI-powered suggestions
+          </Text>
+        </>
+      )}
+      {!hideHeader && !autoExpandAppId && (
+        <>
+          <Text className="text-white font-bold text-lg mb-3">Dating Apps Profiles</Text>
+          <Text className="text-white/60 text-sm mb-4">
+            Optimize your profiles for each dating app with AI-powered suggestions
+          </Text>
+        </>
+      )}
 
       {/* Dating Apps List */}
       {DATING_APPS.map(app => {
