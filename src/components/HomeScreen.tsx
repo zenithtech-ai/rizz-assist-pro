@@ -32,19 +32,21 @@ import {
   Image as ImageIcon,
   X,
   ChevronRight,
-  Shield,
   Lock,
+  Check,
+  Crown,
 } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
-import { StyleButton } from '@/components/StyleButton';
 import { ReplyBubble } from '@/components/ReplyBubble';
 import { useTokenStore } from '@/lib/tokenStore';
 import { usePersonaStore, PERSONAS } from '@/lib/personaStore';
 import {
   COLORS,
-  REPLY_STYLES,
-  ReplyStyleId,
+  TONE_OPTIONS,
+  ACTION_OPTIONS,
+  ToneId,
+  ActionId,
   FREE_TOKEN_LIMIT,
 } from '@/lib/constants';
 import { generateReplies as generateLocalReplies, ResponseLength } from '@/lib/replyGenerator';
@@ -52,13 +54,130 @@ import { generateReplies as generateAIReplies } from '@/lib/openai';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+// Tone button component
+function ToneButton({
+  tone,
+  isSelected,
+  onPress,
+}: {
+  tone: typeof TONE_OPTIONS[number];
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
+      className="mr-2 mb-2 active:opacity-80"
+    >
+      <View
+        className="px-3 py-2 rounded-xl flex-row items-center"
+        style={{
+          backgroundColor: isSelected ? 'rgba(255, 105, 180, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+          borderWidth: 1.5,
+          borderColor: isSelected ? COLORS.neonPink : 'transparent',
+        }}
+      >
+        <Text className="text-base mr-1">{tone.emoji}</Text>
+        <Text
+          className="text-sm font-medium"
+          style={{ color: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
+        >
+          {tone.label}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+// Action chip component (multiple select)
+function ActionChip({
+  action,
+  isSelected,
+  onPress,
+}: {
+  action: typeof ACTION_OPTIONS[number];
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
+      className="mr-3 active:opacity-80"
+    >
+      <View
+        className="px-4 py-2.5 rounded-full flex-row items-center"
+        style={{
+          backgroundColor: isSelected ? 'rgba(255, 105, 180, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+          borderWidth: 1.5,
+          borderColor: isSelected ? COLORS.neonPink : 'rgba(255, 255, 255, 0.2)',
+        }}
+      >
+        {isSelected && (
+          <View className="mr-1.5">
+            <Check size={14} color={COLORS.neonPink} strokeWidth={3} />
+          </View>
+        )}
+        <Text className="text-base mr-1.5">{action.emoji}</Text>
+        <Text
+          className="text-sm font-semibold"
+          style={{ color: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
+        >
+          {action.label}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+// Teaser card for About Me upgrade
+function AboutMeTeaserCard({ onUpgrade }: { onUpgrade: () => void }) {
+  return (
+    <Animated.View entering={FadeIn.delay(100).duration(400)}>
+      <View
+        className="rounded-2xl p-4 mb-4"
+        style={{
+          backgroundColor: 'rgba(255, 105, 180, 0.15)',
+          borderWidth: 1,
+          borderColor: 'rgba(255, 105, 180, 0.3)',
+        }}
+      >
+        <View className="flex-row items-start">
+          <Crown size={22} color={COLORS.neonPink} />
+          <View className="flex-1 ml-3">
+            <Text className="text-white font-bold text-base mb-1">
+              Want even better, personalized replies?
+            </Text>
+            <Text className="text-white/60 text-sm mb-3">
+              Add your About Me to get replies that sound 100% like you
+            </Text>
+            <Pressable
+              onPress={onUpgrade}
+              className="self-start px-4 py-2 rounded-full active:opacity-80"
+              style={{ backgroundColor: COLORS.neonPink }}
+            >
+              <Text className="text-white font-semibold text-sm">Upgrade</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
+
 export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const [showGenerator, setShowGenerator] = useState(false);
   const [message, setMessage] = useState('');
-  const [selectedStyle, setSelectedStyle] = useState<ReplyStyleId>('flirty');
+  const [selectedTone, setSelectedTone] = useState<ToneId>('flirty');
+  const [selectedActions, setSelectedActions] = useState<ActionId[]>([]);
   const [responseLength, setResponseLength] = useState<ResponseLength>('short');
   const [generatedReplies, setGeneratedReplies] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -74,6 +193,9 @@ export function HomeScreen() {
 
   // Screenshot is only available for paid users
   const screenshotEnabled = planType !== 'free';
+
+  // Check if user has paid plan for About Me
+  const isPaidUser = planType === 'silver' || planType === 'gold';
 
   // Persona store
   const selectedPersonaId = usePersonaStore((s) => s.selectedPersonaId);
@@ -103,6 +225,29 @@ export function HomeScreen() {
     shadowOpacity: glowOpacity.value,
   }));
 
+  const toggleAction = (actionId: ActionId) => {
+    setSelectedActions(prev =>
+      prev.includes(actionId)
+        ? prev.filter(a => a !== actionId)
+        : [...prev, actionId]
+    );
+  };
+
+  // Build style string from tone + actions
+  const buildStyleString = (): string => {
+    const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
+    let style = tone?.label || 'Flirty';
+
+    if (selectedActions.length > 0) {
+      const actionLabels = selectedActions.map(a =>
+        ACTION_OPTIONS.find(opt => opt.id === a)?.label || ''
+      ).filter(Boolean);
+      style += ' + ' + actionLabels.join(', ');
+    }
+
+    return style;
+  };
+
   const handleGenerate = async () => {
     // Need either text or screenshot
     if (!message.trim() && !screenshotBase64) {
@@ -128,17 +273,18 @@ export function HomeScreen() {
 
     // Try AI generation first, fall back to local if it fails
     try {
+      const styleString = buildStyleString();
       console.log('Generating replies with:', {
         hasText: !!message.trim(),
         hasImage: !!screenshotBase64,
-        style: selectedStyle,
+        style: styleString,
         persona: currentPersona.name
       });
 
       const result = await generateAIReplies({
         conversationText: message.trim() || undefined,
         imageBase64: screenshotBase64 || undefined,
-        style: selectedStyle,
+        style: styleString,
         count: 3,
         userPersona: getActivePersonaDescription(),
         userAboutMe: aboutMe,
@@ -160,7 +306,7 @@ export function HomeScreen() {
         console.error('AI generation error:', result.error);
         // Fallback to local generation (only works with text)
         if (message.trim()) {
-          const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
+          const localReplies = generateLocalReplies(message, 'flirty', responseLength);
           setGeneratedReplies(localReplies);
         }
         // If only screenshot and it failed, show error via haptic
@@ -171,7 +317,7 @@ export function HomeScreen() {
     } catch (error) {
       console.error('AI generation failed, using fallback:', error);
       if (message.trim()) {
-        const localReplies = generateLocalReplies(message, selectedStyle, responseLength);
+        const localReplies = generateLocalReplies(message, 'flirty', responseLength);
         setGeneratedReplies(localReplies);
       }
       // If only screenshot and it failed, show error via haptic
@@ -344,7 +490,7 @@ export function HomeScreen() {
     );
   }
 
-  // Generator Screen (existing functionality)
+  // Generator Screen (redesigned layout)
   return (
     <View style={{ flex: 1 }}>
       <LinearGradient
@@ -375,186 +521,201 @@ export function HomeScreen() {
 
           <ScrollView
             className="flex-1"
-            contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
+            contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* My Vibe Card - Edit Persona Button */}
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push('/my-vibe');
-              }}
-              className="mb-4 active:opacity-90"
-            >
-              <View
-                className="rounded-2xl p-4 flex-row items-center"
-                style={{
-                  backgroundColor: 'rgba(255, 105, 180, 0.15)',
-                  borderWidth: 1,
-                  borderColor: 'rgba(255, 105, 180, 0.3)',
-                }}
-              >
-                <Text className="text-2xl mr-3">{currentPersona.emoji}</Text>
-                <View className="flex-1">
-                  <Text className="text-white font-bold text-base">{currentPersona.name}</Text>
-                  {aboutMe ? (
-                    <Text className="text-white/60 text-xs mt-0.5" numberOfLines={1}>
-                      + About Me configured
-                    </Text>
-                  ) : (
-                    <Text className="text-white/50 text-xs mt-0.5">
-                      Tap to edit persona & About Me
-                    </Text>
-                  )}
-                </View>
-                <ChevronRight size={20} color="rgba(255, 255, 255, 0.5)" />
-              </View>
-            </Pressable>
-
-            {/* Message Input with Image Button */}
-            <View
-              className="bg-white/10 rounded-2xl p-4 mb-6"
-              style={{
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-              }}
-            >
-              <View className="flex-row items-center justify-between mb-2">
-                <Text className="text-white/70 text-sm font-medium" style={{ flex: 1, marginRight: 8 }}>
-                  {screenshotEnabled
-                    ? 'Paste their message or upload a screenshot'
-                    : 'Paste their message (screenshots: upgrade required)'}
-                </Text>
-                <Pressable
-                  onPress={handlePickImage}
-                  disabled={isLoadingImage}
-                  className="active:opacity-80 flex-row items-center"
-                >
-                  {isLoadingImage ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : screenshotEnabled ? (
-                    <ImageIcon size={20} color="rgba(255, 255, 255, 0.7)" />
-                  ) : (
-                    <View className="flex-row items-center">
-                      <Lock size={14} color={COLORS.tokenFree} />
-                      <ImageIcon size={20} color="rgba(255, 255, 255, 0.3)" style={{ marginLeft: 4 }} />
-                    </View>
-                  )}
-                </Pressable>
-              </View>
-              <TextInput
-                value={message}
-                onChangeText={setMessage}
-                placeholder="What did they say to you? Or upload a screenshot"
-                placeholderTextColor="rgba(255, 255, 255, 0.4)"
-                multiline
-                numberOfLines={4}
-                className="text-white text-base min-h-[100px]"
-                style={{ textAlignVertical: 'top' }}
-              />
-              {hasScreenshot && (
-                <View className="flex-row items-center justify-between mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.15)' }}>
-                  <View className="flex-row items-center">
-                    <ImageIcon size={16} color={COLORS.neonPink} />
-                    <Text className="text-white/80 text-sm ml-2">Screenshot uploaded</Text>
-                  </View>
-                  <Pressable
-                    onPress={() => {
-                      setHasScreenshot(false);
-                      setScreenshotBase64(null);
-                    }}
-                    className="p-1 active:opacity-70"
-                  >
-                    <X size={16} color="rgba(255, 255, 255, 0.6)" />
-                  </Pressable>
-                </View>
-              )}
-            </View>
-
-            {/* Response Length Selector */}
-            <Text className="text-white font-bold text-lg mb-3">
-              Response length
-            </Text>
-            <View className="flex-row gap-2 mb-6">
-              <Pressable
-                onPress={() => setResponseLength('short')}
-                className="flex-1 py-2 px-4 rounded-lg active:opacity-80"
-                style={{
-                  backgroundColor: responseLength === 'short' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.1)',
-                }}
-              >
-                <Text
-                  className="font-semibold text-center"
-                  style={{ color: responseLength === 'short' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
-                >
-                  Short (1 sentence)
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setResponseLength('long')}
-                className="flex-1 py-2 px-4 rounded-lg active:opacity-80"
-                style={{
-                  backgroundColor: responseLength === 'long' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.1)',
-                }}
-              >
-                <Text
-                  className="font-semibold text-center"
-                  style={{ color: responseLength === 'long' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
-                >
-                  Long (2-3 sentences)
-                </Text>
-              </Pressable>
-            </View>
-
-            {/* Style Selection */}
-            <Text className="text-white font-bold text-lg mb-3">
-              Choose your style
-            </Text>
-
-            <View className="flex-row flex-wrap mb-6">
-              {REPLY_STYLES.map((style) => (
-                <StyleButton
-                  key={style.id}
-                  label={style.label}
-                  emoji={style.emoji}
-                  isSelected={selectedStyle === style.id}
-                  onPress={() => setSelectedStyle(style.id)}
-                />
-              ))}
-            </View>
-
-            {/* Generate Button */}
-            <Pressable
-              onPress={handleGenerate}
-              disabled={isGenerating}
-              className="py-4 rounded-2xl flex-row items-center justify-center mb-6 active:opacity-80"
-              style={{
-                backgroundColor: isGenerating ? 'rgba(255, 105, 180, 0.5)' : COLORS.neonPink,
-                shadowColor: COLORS.neonPink,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.4,
-                shadowRadius: 12,
-                elevation: 6,
-              }}
-            >
-              <Sparkles size={24} color="#FFFFFF" />
-              <Text className="text-white font-bold text-lg ml-2">
-                {isGenerating ? 'Generating...' : 'Generate Replies'}
-              </Text>
-            </Pressable>
-
-            {/* Generated Replies */}
+            {/* Generated Replies with Teaser Card */}
             {generatedReplies.length > 0 && (
               <Animated.View entering={FadeIn}>
+                {/* Teaser card for non-paid users without About Me */}
+                {!isPaidUser && (
+                  <AboutMeTeaserCard
+                    onUpgrade={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      router.push('/my-vibe');
+                    }}
+                  />
+                )}
+
                 <Text className="text-white font-bold text-lg mb-3">
                   Tap to copy
                 </Text>
                 {generatedReplies.map((reply, index) => (
                   <ReplyBubble key={index} text={reply} index={index} />
                 ))}
+
+                <View className="h-6" />
               </Animated.View>
             )}
+
+            {/* Message Input with Image Button */}
+            <View className="mb-5">
+              <Text className="text-white/50 text-xs mb-2 ml-1">
+                Paste message or upload screenshot
+              </Text>
+              <View
+                className="bg-white/10 rounded-2xl p-4"
+                style={{
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.2)',
+                }}
+              >
+                <View className="flex-row items-center justify-between mb-2">
+                  <Text className="text-white/70 text-sm font-medium" style={{ flex: 1, marginRight: 8 }}>
+                    {screenshotEnabled
+                      ? 'Their message'
+                      : 'Their message (screenshots: upgrade required)'}
+                  </Text>
+                  <Pressable
+                    onPress={handlePickImage}
+                    disabled={isLoadingImage}
+                    className="active:opacity-80 flex-row items-center"
+                  >
+                    {isLoadingImage ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : screenshotEnabled ? (
+                      <ImageIcon size={20} color="rgba(255, 255, 255, 0.7)" />
+                    ) : (
+                      <View className="flex-row items-center">
+                        <Lock size={14} color={COLORS.tokenFree} />
+                        <ImageIcon size={20} color="rgba(255, 255, 255, 0.3)" style={{ marginLeft: 4 }} />
+                      </View>
+                    )}
+                  </Pressable>
+                </View>
+                <TextInput
+                  value={message}
+                  onChangeText={setMessage}
+                  placeholder="What did they say to you?"
+                  placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                  multiline
+                  numberOfLines={4}
+                  className="text-white text-base min-h-[80px]"
+                  style={{ textAlignVertical: 'top' }}
+                />
+                {hasScreenshot && (
+                  <View className="flex-row items-center justify-between mt-3 pt-3" style={{ borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.15)' }}>
+                    <View className="flex-row items-center">
+                      <ImageIcon size={16} color={COLORS.neonPink} />
+                      <Text className="text-white/80 text-sm ml-2">Screenshot uploaded</Text>
+                    </View>
+                    <Pressable
+                      onPress={() => {
+                        setHasScreenshot(false);
+                        setScreenshotBase64(null);
+                      }}
+                      className="p-1 active:opacity-70"
+                    >
+                      <X size={16} color="rgba(255, 255, 255, 0.6)" />
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Tone Selection */}
+            <View className="mb-5">
+              <Text className="text-white/50 text-xs mb-2 ml-1">
+                Choose your tone and action
+              </Text>
+              <Text className="text-white font-bold text-lg mb-3">
+                Choose Your Tone
+              </Text>
+              <View className="flex-row flex-wrap">
+                {TONE_OPTIONS.map((tone) => (
+                  <ToneButton
+                    key={tone.id}
+                    tone={tone}
+                    isSelected={selectedTone === tone.id}
+                    onPress={() => setSelectedTone(tone.id)}
+                  />
+                ))}
+              </View>
+            </View>
+
+            {/* Action/Intent Chips */}
+            <View className="mb-6">
+              <Text className="text-white font-bold text-base mb-3">
+                Action / Intent <Text className="text-white/50 font-normal">(optional)</Text>
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ flexGrow: 0 }}
+              >
+                {ACTION_OPTIONS.map((action) => (
+                  <ActionChip
+                    key={action.id}
+                    action={action}
+                    isSelected={selectedActions.includes(action.id)}
+                    onPress={() => toggleAction(action.id)}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Response Length Toggle - Now above Generate button */}
+            <View className="mb-4">
+              <Text className="text-white font-bold text-base mb-3">
+                Length
+              </Text>
+              <View className="flex-row gap-2">
+                <Pressable
+                  onPress={() => setResponseLength('short')}
+                  className="flex-1 py-2.5 px-4 rounded-xl active:opacity-80"
+                  style={{
+                    backgroundColor: responseLength === 'short' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  <Text
+                    className="font-semibold text-center text-sm"
+                    style={{ color: responseLength === 'short' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
+                  >
+                    Short (1 sentence)
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setResponseLength('long')}
+                  className="flex-1 py-2.5 px-4 rounded-xl active:opacity-80"
+                  style={{
+                    backgroundColor: responseLength === 'long' ? COLORS.neonPink : 'rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  <Text
+                    className="font-semibold text-center text-sm"
+                    style={{ color: responseLength === 'long' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
+                  >
+                    Long (2-3 sentences)
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Generate Button */}
+            <View className="mb-2">
+              <Text className="text-white/50 text-xs text-center mb-3">
+                Ready? Generate
+              </Text>
+              <Pressable
+                onPress={handleGenerate}
+                disabled={isGenerating}
+                className="py-4 rounded-2xl flex-row items-center justify-center active:opacity-80"
+                style={{
+                  backgroundColor: isGenerating ? 'rgba(255, 105, 180, 0.5)' : COLORS.neonPink,
+                  shadowColor: COLORS.neonPink,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 12,
+                  elevation: 6,
+                }}
+              >
+                <Sparkles size={24} color="#FFFFFF" />
+                <Text className="text-white font-bold text-lg ml-2">
+                  {isGenerating ? 'Generating...' : 'Generate Replies'}
+                </Text>
+              </Pressable>
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>

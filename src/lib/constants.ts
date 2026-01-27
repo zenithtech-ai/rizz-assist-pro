@@ -18,6 +18,33 @@ export const COLORS = {
   textDark: '#1A0D2E',
 };
 
+// Tone options (single select)
+export const TONE_OPTIONS = [
+  { id: 'flirty', label: 'Flirty', emoji: '😏' },
+  { id: 'seductive', label: 'Seductive', emoji: '🔥' },
+  { id: 'cheeky', label: 'Cheeky/Tease', emoji: '😜' },
+  { id: 'smooth', label: 'Smooth Charmer', emoji: '🎩' },
+  { id: 'witty', label: 'Witty Banter', emoji: '⚡' },
+  { id: 'bold', label: 'Bold Direct', emoji: '🎯' },
+  { id: 'mysterious', label: 'Mysterious Intrigue', emoji: '🌙' },
+  { id: 'cute', label: 'Cute Wholesome', emoji: '🌸' },
+  { id: 'thoughtful', label: 'Thoughtful Deep', emoji: '💭' },
+  { id: 'adventurous', label: 'Adventurous Fun', emoji: '🎢' },
+  { id: 'compliment', label: 'Compliment', emoji: '✨' },
+] as const;
+
+export type ToneId = typeof TONE_OPTIONS[number]['id'];
+
+// Action/Intent options (multiple select)
+export const ACTION_OPTIONS = [
+  { id: 'roast', label: 'Roast', emoji: '💥' },
+  { id: 'askout', label: 'Ask Out', emoji: '💌' },
+  { id: 'getnumber', label: 'Ask for Number', emoji: '📱' },
+] as const;
+
+export type ActionId = typeof ACTION_OPTIONS[number]['id'];
+
+// Legacy - keeping for compatibility with existing code
 export const REPLY_STYLES = [
   { id: 'flirty', label: 'Flirty', emoji: '😏' },
   { id: 'seductive', label: 'Seductive', emoji: '🔥' },

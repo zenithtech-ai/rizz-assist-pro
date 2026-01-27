@@ -1,7 +1,7 @@
 // Rizz Assist Pro - Tab Layout
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Home, Settings } from 'lucide-react-native';
+import { Home, Settings, User, ScanSearch } from 'lucide-react-native';
 import { COLORS } from '@/lib/constants';
 
 export default function TabLayout() {
@@ -19,7 +19,7 @@ export default function TabLayout() {
           height: 85,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '600',
           marginTop: 4,
         },
@@ -30,6 +30,20 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile-analysis"
+        options={{
+          title: 'Analyze',
+          tabBarIcon: ({ color, size }) => <ScanSearch size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: 'Account',
+          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
         }}
       />
       <Tabs.Screen

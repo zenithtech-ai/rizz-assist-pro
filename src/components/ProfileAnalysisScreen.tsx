@@ -1,0 +1,610 @@
+// Rizz Assist Pro - Profile Analysis Screen
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
+import * as Clipboard from 'expo-clipboard';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import {
+  Upload,
+  Sparkles,
+  User,
+  Copy,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Image as ImageIcon,
+  X,
+} from 'lucide-react-native';
+
+import { TokenCounter } from '@/components/TokenCounter';
+import {
+  COLORS,
+  TONE_OPTIONS,
+  ACTION_OPTIONS,
+  ToneId,
+  ActionId,
+} from '@/lib/constants';
+import { useTokenStore } from '@/lib/tokenStore';
+import { generateReplies as generateAIReplies } from '@/lib/openai';
+
+interface AnalysisResult {
+  personality: string;
+  interests: string[];
+  conversationStyle: string;
+  suggestedApproach: string;
+}
+
+// Mock analysis function (replace with AI when ready)
+function analyzeProfile(imageCount: number): AnalysisResult {
+  return {
+    personality: 'Confident, adventurous, values humor and authenticity',
+    interests: ['Travel', 'Fitness', 'Coffee culture', 'Live music'],
+    conversationStyle: 'Playful banter with substance',
+    suggestedApproach: 'Lead with wit, reference shared interests, keep it light but genuine',
+  };
+}
+
+// Mock openers based on analysis
+function generateAnalysisOpeners(): string[] {
+  return [
+    "okay I have to ask... was that hiking pic taken at sunrise or are you just that dedicated to golden hour 😏",
+    "your profile gives off main character energy and honestly? respect",
+    "I noticed you're into live music - what's the last show that made you forget your phone existed?",
+    "the travel pics are cool but I need to know... are you a window seat or aisle person? this matters",
+    "something tells me you have strong opinions about coffee. am I right?",
+  ];
+}
+
+// Tone button component (reused from HomeScreen)
+function ToneButton({
+  tone,
+  isSelected,
+  onPress,
+}: {
+  tone: typeof TONE_OPTIONS[number];
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
+      className="mr-2 mb-2 active:opacity-80"
+    >
+      <View
+        className="px-3 py-2 rounded-xl flex-row items-center"
+        style={{
+          backgroundColor: isSelected ? 'rgba(255, 105, 180, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+          borderWidth: 1.5,
+          borderColor: isSelected ? COLORS.neonPink : 'transparent',
+        }}
+      >
+        <Text className="text-base mr-1">{tone.emoji}</Text>
+        <Text
+          className="text-sm font-medium"
+          style={{ color: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
+        >
+          {tone.label}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+// Action chip component (multiple select)
+function ActionChip({
+  action,
+  isSelected,
+  onPress,
+}: {
+  action: typeof ACTION_OPTIONS[number];
+  isSelected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
+      className="mr-3 active:opacity-80"
+    >
+      <View
+        className="px-4 py-2.5 rounded-full flex-row items-center"
+        style={{
+          backgroundColor: isSelected ? 'rgba(255, 105, 180, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+          borderWidth: 1.5,
+          borderColor: isSelected ? COLORS.neonPink : 'rgba(255, 255, 255, 0.2)',
+        }}
+      >
+        {isSelected && (
+          <View className="mr-1.5">
+            <Check size={14} color={COLORS.neonPink} strokeWidth={3} />
+          </View>
+        )}
+        <Text className="text-base mr-1.5">{action.emoji}</Text>
+        <Text
+          className="text-sm font-semibold"
+          style={{ color: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)' }}
+        >
+          {action.label}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+// Opener card with copy functionality
+function OpenerCard({ text, index }: { text: string; index: number }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await Clipboard.setStringAsync(text);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Animated.View entering={FadeInDown.delay(index * 100).duration(400)}>
+      <Pressable
+        onPress={handleCopy}
+        className="mb-3 active:opacity-90"
+      >
+        <View
+          className="rounded-2xl p-4"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            borderWidth: 1,
+            borderColor: 'rgba(255, 255, 255, 0.15)',
+          }}
+        >
+          <Text className="text-white text-base leading-6 mb-3">{text}</Text>
+          <View className="flex-row items-center justify-end">
+            {copied ? (
+              <View className="flex-row items-center">
+                <Check size={16} color={COLORS.neonPink} />
+                <Text className="text-white/70 text-xs ml-1">Copied!</Text>
+              </View>
+            ) : (
+              <View className="flex-row items-center">
+                <Copy size={16} color="rgba(255, 255, 255, 0.5)" />
+                <Text className="text-white/50 text-xs ml-1">Tap to copy</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+export function ProfileAnalysisScreen() {
+  const insets = useSafeAreaInsets();
+
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [openers, setOpeners] = useState<string[]>([]);
+  const [isGeneratingOpeners, setIsGeneratingOpeners] = useState(false);
+
+  // Tone & Action state for custom generation
+  const [showToneSelector, setShowToneSelector] = useState(false);
+  const [selectedTone, setSelectedTone] = useState<ToneId>('flirty');
+  const [selectedActions, setSelectedActions] = useState<ActionId[]>([]);
+
+  const tokens = useTokenStore((s) => s.tokens);
+  const consumeToken = useTokenStore((s) => s.useToken);
+
+  const toggleAction = (actionId: ActionId) => {
+    setSelectedActions(prev =>
+      prev.includes(actionId)
+        ? prev.filter(a => a !== actionId)
+        : [...prev, actionId]
+    );
+  };
+
+  const handlePickImages = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        selectionLimit: 5,
+        quality: 0.7,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets.length > 0) {
+        const base64Images = result.assets
+          .filter(asset => asset.base64)
+          .map(asset => asset.base64 as string);
+
+        setUploadedImages(base64Images);
+        setAnalysisResult(null);
+        setOpeners([]);
+        setShowToneSelector(false);
+
+        // Auto-analyze after upload
+        handleAnalyze(base64Images);
+      }
+    } catch (error) {
+      console.error('Image picker error:', error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
+  const handleAnalyze = async (images: string[]) => {
+    setIsAnalyzing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Simulate analysis delay (replace with actual AI call)
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    const result = analyzeProfile(images.length);
+    setAnalysisResult(result);
+    setIsAnalyzing(false);
+  };
+
+  const handleGenerateFromAnalysis = async () => {
+    if (tokens <= 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      return;
+    }
+
+    const success = consumeToken();
+    if (!success) return;
+
+    setIsGeneratingOpeners(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Simulate generation delay (replace with actual AI call)
+    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    const generatedOpeners = generateAnalysisOpeners();
+    setOpeners(generatedOpeners);
+    setIsGeneratingOpeners(false);
+  };
+
+  const handleGenerateWithTone = async () => {
+    if (tokens <= 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      return;
+    }
+
+    const success = consumeToken();
+    if (!success) return;
+
+    setIsGeneratingOpeners(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Build style string
+    const tone = TONE_OPTIONS.find(t => t.id === selectedTone);
+    let style = tone?.label || 'Flirty';
+    if (selectedActions.length > 0) {
+      const actionLabels = selectedActions.map(a =>
+        ACTION_OPTIONS.find(opt => opt.id === a)?.label || ''
+      ).filter(Boolean);
+      style += ' + ' + actionLabels.join(', ');
+    }
+
+    // Simulate generation delay (replace with actual AI call)
+    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    const generatedOpeners = generateAnalysisOpeners();
+    setOpeners(generatedOpeners);
+    setIsGeneratingOpeners(false);
+    setShowToneSelector(false);
+  };
+
+  const handleClearImages = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setUploadedImages([]);
+    setAnalysisResult(null);
+    setOpeners([]);
+    setShowToneSelector(false);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <LinearGradient
+        colors={[COLORS.gradientStart, COLORS.gradientEnd]}
+        style={{ flex: 1, paddingTop: insets.top }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        {/* Header */}
+        <View className="flex-row items-center justify-between px-5 py-3">
+          <View className="flex-row items-center">
+            <User size={22} color={COLORS.neonPink} />
+            <Text className="text-white font-bold text-xl ml-2">Profile Analysis</Text>
+          </View>
+          <TokenCounter />
+        </View>
+
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Upload Section */}
+          {uploadedImages.length === 0 ? (
+            <Animated.View entering={FadeIn.duration(400)}>
+              <Pressable
+                onPress={handlePickImages}
+                className="active:opacity-90"
+              >
+                <View
+                  className="rounded-3xl p-8 items-center justify-center"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    borderWidth: 2,
+                    borderColor: 'rgba(255, 105, 180, 0.3)',
+                    borderStyle: 'dashed',
+                    minHeight: 200,
+                  }}
+                >
+                  <View
+                    className="w-16 h-16 rounded-full items-center justify-center mb-4"
+                    style={{ backgroundColor: 'rgba(255, 105, 180, 0.2)' }}
+                  >
+                    <Upload size={32} color={COLORS.neonPink} />
+                  </View>
+                  <Text className="text-white font-bold text-lg mb-2">
+                    Upload Dating Profile Screenshot(s)
+                  </Text>
+                  <Text className="text-white/50 text-sm text-center">
+                    Upload 1-5 screenshots to analyze their profile{'\n'}and generate personalized openers
+                  </Text>
+                </View>
+              </Pressable>
+            </Animated.View>
+          ) : (
+            <View className="mb-4">
+              {/* Uploaded indicator */}
+              <View className="flex-row items-center justify-between mb-4">
+                <View className="flex-row items-center">
+                  <ImageIcon size={18} color={COLORS.neonPink} />
+                  <Text className="text-white font-semibold text-base ml-2">
+                    {uploadedImages.length} screenshot{uploadedImages.length > 1 ? 's' : ''} uploaded
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={handleClearImages}
+                  className="flex-row items-center active:opacity-70"
+                >
+                  <X size={16} color="rgba(255, 255, 255, 0.6)" />
+                  <Text className="text-white/60 text-sm ml-1">Clear</Text>
+                </Pressable>
+              </View>
+
+              {/* Add more images */}
+              <Pressable
+                onPress={handlePickImages}
+                className="mb-4 active:opacity-80"
+              >
+                <View
+                  className="py-3 rounded-xl flex-row items-center justify-center"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                  }}
+                >
+                  <Upload size={18} color="rgba(255, 255, 255, 0.7)" />
+                  <Text className="text-white/70 font-medium text-sm ml-2">
+                    Upload different screenshots
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+          )}
+
+          {/* Analyzing State */}
+          {isAnalyzing && (
+            <Animated.View entering={FadeIn.duration(300)} className="items-center py-8">
+              <ActivityIndicator size="large" color={COLORS.neonPink} />
+              <Text className="text-white/70 text-base mt-4">Analyzing profile...</Text>
+            </Animated.View>
+          )}
+
+          {/* Analysis Result Card */}
+          {analysisResult && !isAnalyzing && (
+            <Animated.View entering={FadeInDown.duration(400)} className="mb-6">
+              <View
+                className="rounded-2xl p-5"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 105, 180, 0.3)',
+                }}
+              >
+                <View className="flex-row items-center mb-4">
+                  <Sparkles size={20} color={COLORS.neonPink} />
+                  <Text className="text-white font-bold text-lg ml-2">Analysis Results</Text>
+                </View>
+
+                <View className="mb-3">
+                  <Text className="text-white/50 text-xs mb-1">PERSONALITY</Text>
+                  <Text className="text-white text-base">{analysisResult.personality}</Text>
+                </View>
+
+                <View className="mb-3">
+                  <Text className="text-white/50 text-xs mb-1">INTERESTS</Text>
+                  <View className="flex-row flex-wrap">
+                    {analysisResult.interests.map((interest, i) => (
+                      <View
+                        key={i}
+                        className="px-3 py-1 rounded-full mr-2 mb-2"
+                        style={{ backgroundColor: 'rgba(255, 105, 180, 0.2)' }}
+                      >
+                        <Text className="text-white text-sm">{interest}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+
+                <View className="mb-3">
+                  <Text className="text-white/50 text-xs mb-1">CONVERSATION STYLE</Text>
+                  <Text className="text-white text-base">{analysisResult.conversationStyle}</Text>
+                </View>
+
+                <View>
+                  <Text className="text-white/50 text-xs mb-1">SUGGESTED APPROACH</Text>
+                  <Text className="text-white text-base">{analysisResult.suggestedApproach}</Text>
+                </View>
+              </View>
+            </Animated.View>
+          )}
+
+          {/* Generate Options - Only show after analysis */}
+          {analysisResult && !isAnalyzing && openers.length === 0 && (
+            <Animated.View entering={FadeInDown.delay(200).duration(400)}>
+              {/* Generate from Analysis Button */}
+              <Pressable
+                onPress={handleGenerateFromAnalysis}
+                disabled={isGeneratingOpeners}
+                className="mb-4 active:opacity-80"
+              >
+                <View
+                  className="py-4 rounded-2xl flex-row items-center justify-center"
+                  style={{
+                    backgroundColor: isGeneratingOpeners ? 'rgba(255, 105, 180, 0.5)' : COLORS.neonPink,
+                    shadowColor: COLORS.neonPink,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 12,
+                    elevation: 6,
+                  }}
+                >
+                  <Sparkles size={22} color="#FFFFFF" />
+                  <Text className="text-white font-bold text-base ml-2">
+                    {isGeneratingOpeners ? 'Generating...' : 'Suggest Openers from Analysis'}
+                  </Text>
+                </View>
+              </Pressable>
+
+              {/* Or Use Tone & Action */}
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setShowToneSelector(!showToneSelector);
+                }}
+                className="mb-4 active:opacity-80"
+              >
+                <View
+                  className="py-3 rounded-xl flex-row items-center justify-center"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                  }}
+                >
+                  <Text className="text-white/80 font-medium text-base">Or Use Tone & Action</Text>
+                  {showToneSelector ? (
+                    <ChevronUp size={20} color="rgba(255, 255, 255, 0.6)" style={{ marginLeft: 8 }} />
+                  ) : (
+                    <ChevronDown size={20} color="rgba(255, 255, 255, 0.6)" style={{ marginLeft: 8 }} />
+                  )}
+                </View>
+              </Pressable>
+
+              {/* Tone & Action Selector */}
+              {showToneSelector && (
+                <Animated.View entering={FadeIn.duration(300)} className="mb-4">
+                  {/* Tone Selection */}
+                  <Text className="text-white font-bold text-base mb-3">Choose Your Tone</Text>
+                  <View className="flex-row flex-wrap mb-4">
+                    {TONE_OPTIONS.map((tone) => (
+                      <ToneButton
+                        key={tone.id}
+                        tone={tone}
+                        isSelected={selectedTone === tone.id}
+                        onPress={() => setSelectedTone(tone.id)}
+                      />
+                    ))}
+                  </View>
+
+                  {/* Action Chips */}
+                  <Text className="text-white font-bold text-base mb-3">
+                    Action / Intent <Text className="text-white/50 font-normal">(optional)</Text>
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={{ flexGrow: 0 }}
+                    className="mb-4"
+                  >
+                    {ACTION_OPTIONS.map((action) => (
+                      <ActionChip
+                        key={action.id}
+                        action={action}
+                        isSelected={selectedActions.includes(action.id)}
+                        onPress={() => toggleAction(action.id)}
+                      />
+                    ))}
+                  </ScrollView>
+
+                  {/* Generate with Tone Button */}
+                  <Pressable
+                    onPress={handleGenerateWithTone}
+                    disabled={isGeneratingOpeners}
+                    className="active:opacity-80"
+                  >
+                    <View
+                      className="py-4 rounded-2xl flex-row items-center justify-center"
+                      style={{
+                        backgroundColor: isGeneratingOpeners ? 'rgba(255, 105, 180, 0.5)' : COLORS.neonPink,
+                      }}
+                    >
+                      <Sparkles size={20} color="#FFFFFF" />
+                      <Text className="text-white font-bold text-base ml-2">
+                        {isGeneratingOpeners ? 'Generating...' : 'Generate with Selected Tone'}
+                      </Text>
+                    </View>
+                  </Pressable>
+                </Animated.View>
+              )}
+            </Animated.View>
+          )}
+
+          {/* Generated Openers */}
+          {openers.length > 0 && (
+            <Animated.View entering={FadeIn.duration(400)}>
+              <View className="flex-row items-center justify-between mb-4">
+                <Text className="text-white font-bold text-lg">Suggested Openers</Text>
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setOpeners([]);
+                  }}
+                  className="active:opacity-70"
+                >
+                  <Text className="text-white/50 text-sm">Generate new</Text>
+                </Pressable>
+              </View>
+
+              {openers.map((opener, index) => (
+                <OpenerCard key={index} text={opener} index={index} />
+              ))}
+            </Animated.View>
+          )}
+        </ScrollView>
+      </LinearGradient>
+    </View>
+  );
+}
+
+export default ProfileAnalysisScreen;

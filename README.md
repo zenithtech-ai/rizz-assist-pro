@@ -4,13 +4,14 @@ AI-powered dating assistant app that generates contextual reply suggestions base
 
 ## Features
 
-- **10 Reply Styles**: Flirty, Seductive, Funny, Roast, Smooth, Compliment, Ask Out, Get Number, Tease, Bold Move
+- **11 Tone Options**: Flirty, Seductive, Cheeky/Tease, Smooth Charmer, Witty Banter, Bold Direct, Mysterious Intrigue, Cute Wholesome, Thoughtful Deep, Adventurous Fun, Compliment
+- **3 Action Intents**: Roast, Ask Out, Ask for Number (can be combined with any tone)
 - **9 Persona Presets**: Cheeky Tease, Smooth Charmer, Witty Banter, Bold Direct, Mysterious Intrigue, Cute Wholesome, Edgy Sarcastic, Thoughtful Deep, Adventurous Fun
 - **Custom Persona**: Define your own personality/style
 - **About Me Profile**: Add personal details (likes, dislikes, quirks) for more personalized replies (Silver & Gold only)
-- **Screenshot Analysis**: Upload conversation screenshots for AI to read and respond to
-- **Token System**: Free users get 3 replies/day, Silver gets 1,500/month, Gold gets 3,000/month
+- **Profile Analysis**: Upload dating profile screenshots to analyze and generate tailored openers
 - **Screenshot Analysis**: Upload conversation screenshots for AI to read and respond to (Silver & Gold only)
+- **Token System**: Free users get 3 replies/day, Silver gets 1,500/month, Gold gets 3,000/month
 - **Subscription Plans**:
   - Free: 3 replies/day, no screenshot analysis
   - Silver: $9.95/month, 1,500 replies/month, screenshot analysis enabled
@@ -22,10 +23,12 @@ AI-powered dating assistant app that generates contextual reply suggestions base
 1. **Splash Screen** (2s) - Animated logo and branding
 2. **Disclaimer Modal** - User must accept terms on first launch
 3. **Onboarding** (3 screens) - Feature introduction
-4. **Home Screen** - Main reply generation interface
-5. **My Vibe & Profile** - Persona selection and personal details
-6. **Paywall** - Upgrade to Pro modal
-7. **Settings** - Account management and legal documents
+4. **Home Screen** - Main reply generation interface with tone/action selectors
+5. **Profile Analysis** - Upload dating profiles for analysis and opener suggestions
+6. **Account** - View plan status, My Vibe, and About Me
+7. **My Vibe & Profile** - Persona selection and personal details
+8. **Paywall** - Upgrade to Pro modal
+9. **Settings** - Account management and legal documents
 
 ## Structure
 
@@ -36,22 +39,26 @@ src/
 │   ├── paywall.tsx      # Subscription paywall modal
 │   ├── my-vibe.tsx      # My Vibe & Profile screen
 │   └── (tabs)/
-│       ├── _layout.tsx  # Tab navigation
-│       ├── index.tsx    # Home tab
-│       └── settings.tsx # Settings tab
+│       ├── _layout.tsx         # Tab navigation (4 tabs)
+│       ├── index.tsx           # Home tab
+│       ├── profile-analysis.tsx # Profile Analysis tab
+│       ├── account.tsx         # Account tab
+│       └── settings.tsx        # Settings tab
 ├── components/
 │   ├── SplashScreen.tsx
 │   ├── DisclaimerModal.tsx
 │   ├── OnboardingScreen.tsx
-│   ├── HomeScreen.tsx
+│   ├── HomeScreen.tsx          # Updated with tone grid + action chips
+│   ├── ProfileAnalysisScreen.tsx # New - profile analysis feature
+│   ├── AccountScreen.tsx       # New - account & About Me display
 │   ├── SettingsScreen.tsx
-│   ├── MyVibeScreen.tsx    # Persona & profile editor
+│   ├── MyVibeScreen.tsx        # Persona & profile editor
 │   ├── TokenCounter.tsx
 │   ├── StyleButton.tsx
 │   ├── ReplyBubble.tsx
 │   └── CollapsibleSection.tsx
 └── lib/
-    ├── constants.ts     # Colors, mock data, legal text
+    ├── constants.ts     # Colors, tone options, action options, legal text
     ├── knowledgeBase.ts # AI knowledge base for reply generation
     ├── openai.ts        # OpenAI GPT-4o API integration with persona injection
     ├── replyGenerator.ts # Local fallback reply generator
