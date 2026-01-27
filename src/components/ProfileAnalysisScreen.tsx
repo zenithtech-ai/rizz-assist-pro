@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,6 +28,7 @@ import {
   Lock,
   Zap,
   ScanSearch,
+  Trash2,
 } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
@@ -319,13 +321,10 @@ export function ProfileAnalysisScreen() {
           .filter(asset => asset.base64)
           .map(asset => asset.base64 as string);
 
-        setUploadedImages(base64Images);
+        setUploadedImages(prev => [...prev, ...base64Images]);
         setAnalysisResult(null);
         setOpeners([]);
         setShowToneSelector(false);
-
-        // Auto-analyze after upload
-        handleAnalyze(base64Images);
       }
     } catch (error) {
       console.error('Image picker error:', error);
@@ -465,25 +464,60 @@ export function ProfileAnalysisScreen() {
                 </Pressable>
               </Animated.View>
             ) : (
-              <View className="mb-4">
+              <Animated.View entering={FadeIn.duration(300)} className="mb-6">
                 {/* Uploaded indicator */}
                 <View className="flex-row items-center justify-between mb-4">
                   <View className="flex-row items-center">
                     <ImageIcon size={18} color={COLORS.neonPink} />
                     <Text className="text-white font-semibold text-base ml-2">
-                      {uploadedImages.length} screenshot{uploadedImages.length > 1 ? 's' : ''} uploaded
+                      {uploadedImages.length} screenshot{uploadedImages.length > 1 ? 's' : ''} selected
                     </Text>
                   </View>
-                  <Pressable
-                    onPress={handleClearImages}
-                    className="flex-row items-center active:opacity-70"
-                  >
-                    <X size={16} color="rgba(255, 255, 255, 0.6)" />
-                    <Text className="text-white/60 text-sm ml-1">Clear</Text>
-                  </Pressable>
                 </View>
 
-                {/* Add more images */}
+                {/* Image Gallery */}
+                <View className="mb-4">
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={{ flexGrow: 0 }}
+                  >
+                    {uploadedImages.map((base64, index) => (
+                      <Animated.View
+                        key={index}
+                        entering={FadeInDown.delay(index * 100).duration(300)}
+                        className="mr-3"
+                      >
+                        <View
+                          className="relative rounded-2xl overflow-hidden"
+                          style={{ width: 140, height: 180 }}
+                        >
+                          <Image
+                            source={{ uri: `data:image/jpeg;base64,${base64}` }}
+                            style={{ width: '100%', height: '100%' }}
+                          />
+                          {/* Delete button overlay */}
+                          <Pressable
+                            onPress={() => {
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              setUploadedImages(prev => prev.filter((_, i) => i !== index));
+                            }}
+                            className="absolute top-2 right-2 active:opacity-60"
+                          >
+                            <View
+                              className="w-8 h-8 rounded-full items-center justify-center"
+                              style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
+                            >
+                              <Trash2 size={16} color="#FFFFFF" />
+                            </View>
+                          </Pressable>
+                        </View>
+                      </Animated.View>
+                    ))}
+                  </ScrollView>
+                </View>
+
+                {/* Add more images button */}
                 <Pressable
                   onPress={handlePickImages}
                   className="mb-4 active:opacity-80"
@@ -498,11 +532,42 @@ export function ProfileAnalysisScreen() {
                   >
                     <Upload size={18} color="rgba(255, 255, 255, 0.7)" />
                     <Text className="text-white/70 font-medium text-sm ml-2">
-                      Upload different screenshots
+                      Add more screenshots
                     </Text>
                   </View>
                 </Pressable>
-              </View>
+
+                {/* Submit button */}
+                <Pressable
+                  onPress={() => handleAnalyze(uploadedImages)}
+                  disabled={isAnalyzing}
+                  className="active:opacity-80"
+                >
+                  <View
+                    className="py-4 rounded-2xl flex-row items-center justify-center"
+                    style={{
+                      backgroundColor: isAnalyzing ? 'rgba(255, 105, 180, 0.5)' : COLORS.neonPink,
+                      shadowColor: COLORS.neonPink,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.4,
+                      shadowRadius: 12,
+                      elevation: 6,
+                    }}
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                        <Text className="text-white font-bold text-base ml-2">Analyzing...</Text>
+                      </>
+                    ) : (
+                      <>
+                        <ScanSearch size={22} color="#FFFFFF" />
+                        <Text className="text-white font-bold text-base ml-2">Analyze Profile</Text>
+                      </>
+                    )}
+                  </View>
+                </Pressable>
+              </Animated.View>
             )}
 
             {/* Analyzing State */}
