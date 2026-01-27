@@ -1,5 +1,5 @@
 // Dating Apps Profile Editor Component
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ interface DatingAppsEditorProps {
   onProfileDelete: (appId: DatingAppId) => Promise<void>;
   savedProfiles: Partial<Record<DatingAppId, { appId: DatingAppId; fieldValues: Record<string, string> }>>;
   aboutMe: string;
+  autoExpandAppId?: DatingAppId | null;
 }
 
 interface AppEditState {
@@ -35,10 +36,34 @@ interface AppEditState {
   isSaving: boolean;
 }
 
-export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles, aboutMe }: DatingAppsEditorProps) {
-  const [expandedApps, setExpandedApps] = useState<Set<DatingAppId>>(new Set());
+export function DatingAppsEditor({ onProfileSave, onProfileDelete, savedProfiles, aboutMe, autoExpandAppId }: DatingAppsEditorProps) {
+  const [expandedApps, setExpandedApps] = useState<Set<DatingAppId>>(
+    autoExpandAppId ? new Set([autoExpandAppId]) : new Set()
+  );
   const [appStates, setAppStates] = useState<Partial<Record<DatingAppId, AppEditState>>>({});
   const [deleteConfirmAppId, setDeleteConfirmAppId] = useState<DatingAppId | null>(null);
+
+  // Initialize state for auto-expanded app
+  useEffect(() => {
+    if (autoExpandAppId && !appStates[autoExpandAppId]) {
+      const saved = savedProfiles[autoExpandAppId]?.fieldValues || ({} as Record<string, string>);
+      const config = APP_PROFILE_FIELDS[autoExpandAppId];
+      const initialized: Record<string, string> = {};
+      config.fields.forEach(field => {
+        initialized[field.key] = saved[field.key] || '';
+      });
+      setAppStates(prev => ({
+        ...prev,
+        [autoExpandAppId]: {
+          fieldValues: initialized,
+          isOptimizing: false,
+          optimizationResult: null,
+          showOptimizationTips: false,
+          isSaving: false,
+        },
+      }));
+    }
+  }, [autoExpandAppId]);
 
   const toggleApp = (appId: DatingAppId) => {
     const newExpanded = new Set(expandedApps);

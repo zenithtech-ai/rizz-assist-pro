@@ -186,7 +186,7 @@ export function AccountScreen() {
                       key={app.id}
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        router.push('/my-vibe');
+                        router.push(`/my-vibe?appId=${app.id}`);
                       }}
                       className="mb-3 mr-3 active:opacity-70"
                     >

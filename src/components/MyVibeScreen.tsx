@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { ChevronLeft, User, Pencil, Lock, Zap } from 'lucide-react-native';
@@ -25,6 +25,7 @@ import { DatingAppId } from '@/lib/datingAppsKnowledge';
 export function MyVibeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const params = useLocalSearchParams();
 
   const loadState = usePersonaStore((s) => s.loadState);
   const savedAboutMe = usePersonaStore((s) => s.aboutMe);
@@ -41,6 +42,9 @@ export function MyVibeScreen() {
   // Local state for editing
   const [aboutMe, setAboutMe] = useState(savedAboutMe);
   const [isSaving, setIsSaving] = useState(false);
+  const [expandedAppId, setExpandedAppId] = useState<DatingAppId | null>(
+    (params?.appId as DatingAppId) || null
+  );
 
   useEffect(() => {
     loadState();
@@ -111,6 +115,7 @@ export function MyVibeScreen() {
                   onProfileDelete={handleDatingAppProfileDelete}
                   savedProfiles={datingAppProfiles}
                   aboutMe={aboutMe}
+                  autoExpandAppId={expandedAppId}
                 />
               </Animated.View>
             )}
