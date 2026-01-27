@@ -5,7 +5,6 @@ import {
   Text,
   Pressable,
   ScrollView,
-  TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,17 +14,15 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import {
   User,
   Crown,
-  Sparkles,
   Lock,
   Zap,
-  ChevronRight,
   Pencil,
 } from 'lucide-react-native';
 
 import { TokenCounter } from '@/components/TokenCounter';
 import { COLORS } from '@/lib/constants';
 import { useTokenStore } from '@/lib/tokenStore';
-import { usePersonaStore, PERSONAS } from '@/lib/personaStore';
+import { usePersonaStore } from '@/lib/personaStore';
 
 export function AccountScreen() {
   const insets = useSafeAreaInsets();
@@ -35,12 +32,7 @@ export function AccountScreen() {
   const tokens = useTokenStore((s) => s.tokens);
   const isPaidUser = planType === 'silver' || planType === 'gold';
 
-  const selectedPersonaId = usePersonaStore((s) => s.selectedPersonaId);
   const aboutMe = usePersonaStore((s) => s.aboutMe);
-
-  const currentPersona = selectedPersonaId === 'custom'
-    ? { name: 'Custom Vibe', emoji: '✨' }
-    : PERSONAS.find(p => p.id === selectedPersonaId) || PERSONAS[0];
 
   const getPlanLabel = () => {
     switch (planType) {
@@ -129,45 +121,8 @@ export function AccountScreen() {
             </View>
           </Animated.View>
 
-          {/* My Vibe Card */}
-          <Animated.View entering={FadeInDown.delay(200).duration(400)} className="mb-6">
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push('/my-vibe');
-              }}
-              className="active:opacity-90"
-            >
-              <View
-                className="rounded-2xl p-5"
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  borderWidth: 1,
-                  borderColor: 'rgba(255, 255, 255, 0.15)',
-                }}
-              >
-                <View className="flex-row items-center justify-between mb-3">
-                  <View className="flex-row items-center">
-                    <Sparkles size={22} color={COLORS.neonPink} />
-                    <Text className="text-white font-bold text-lg ml-2">My Vibe</Text>
-                  </View>
-                  <ChevronRight size={20} color="rgba(255, 255, 255, 0.5)" />
-                </View>
-
-                <View className="flex-row items-center">
-                  <Text className="text-2xl mr-2">{currentPersona.emoji}</Text>
-                  <Text className="text-white text-base">{currentPersona.name}</Text>
-                </View>
-
-                <Text className="text-white/50 text-sm mt-2">
-                  Tap to edit your persona and style
-                </Text>
-              </View>
-            </Pressable>
-          </Animated.View>
-
           {/* About Me Section */}
-          <Animated.View entering={FadeInDown.delay(300).duration(400)}>
+          <Animated.View entering={FadeInDown.delay(200).duration(400)}>
             <View
               className="rounded-2xl p-5"
               style={{
